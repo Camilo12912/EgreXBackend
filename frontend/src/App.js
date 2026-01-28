@@ -23,7 +23,7 @@ function App() {
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/events" element={<Events />} />
-          <Route path="/" element={<Navigate to="/profile" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Route>
 
         <Route element={<PrivateRoute allowedRoles={['admin']} />}>

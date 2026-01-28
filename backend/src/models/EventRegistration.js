@@ -27,6 +27,7 @@ class EventRegistration {
             SELECT 
                 er.registered_at,
                 u.email,
+                u.identificacion,
                 p.nombre,
                 p.telefono,
                 p.programa_academico
