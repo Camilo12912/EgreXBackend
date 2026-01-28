@@ -1,24 +1,27 @@
 const db = require('./db');
 const bcrypt = require('bcrypt');
 
-async function waitForDb(retries = 10, delay = 5000) {
+async function waitForDb(retries = 20, delay = 3000) {
+    console.log('--- Verificando conexión a la base de datos ---');
     for (let i = 0; i < retries; i++) {
         try {
             await db.query('SELECT 1');
-            console.log('Base de datos conectada exitosamente.');
+            console.log('✅ Conexión exitosa a la base de datos.');
             return;
         } catch (err) {
-            console.log(`Base de datos no lista, reintentando en ${delay / 1000}s (${i + 1}/${retries})...`);
+            console.log(`⏳ DB no lista (intento ${i + 1}/${retries}). Error: ${err.message}`);
             await new Promise(res => setTimeout(res, delay));
         }
     }
-    throw new Error('No se pudo conectar a la base de datos después de múltiples intentos.');
+    throw new Error('❌ Fallo total de conexión tras agotarse los intentos.');
 }
 
 async function initializeDatabase() {
     try {
+        console.log('--- Iniciando Proceso de Inicialización EgreX ---');
         await waitForDb();
-        console.log('Verificando e inicializando tablas de la base de datos...');
+
+        console.log('🛠 Creando/Verificando tablas...');
 
         // 1. Users Table
         await db.query(`
@@ -33,7 +36,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('- Tabla "users" lista.');
+        console.log('   -> Tabla [users] lista.');
 
         // 2. Profiles Table
         await db.query(`
@@ -62,7 +65,7 @@ async function initializeDatabase() {
                 fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('- Tabla "egresados_profiles" lista.');
+        console.log('   -> Tabla [egresados_profiles] lista.');
 
         // 3. Profile History Table
         await db.query(`
@@ -77,7 +80,7 @@ async function initializeDatabase() {
                 change_type VARCHAR(50) DEFAULT 'update'
             );
         `);
-        console.log('- Tabla "profile_modifications" lista.');
+        console.log('   -> Tabla [profile_modifications] lista.');
 
         // 4. Events Table
         await db.query(`
@@ -92,7 +95,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('- Tabla "events" lista.');
+        console.log('   -> Tabla [events] lista.');
 
         // 5. Event Registrations Table
         await db.query(`
@@ -104,9 +107,10 @@ async function initializeDatabase() {
                 UNIQUE(event_id, user_id)
             );
         `);
-        console.log('- Tabla "event_registrations" lista.');
+        console.log('   -> Tabla [event_registrations] lista.');
 
         // 6. Seed Admin User
+        console.log('👤 Verificando usuario administrador...');
         const adminEmail = 'admin@fesc.edu.co';
         const adminPass = 'admin';
         const adminHash = await bcrypt.hash(adminPass, 10);
@@ -114,20 +118,22 @@ async function initializeDatabase() {
 
         const checkAdmin = await db.query('SELECT * FROM users WHERE email = $1 OR identificacion = $2', [adminEmail, adminId]);
         if (checkAdmin.rows.length === 0) {
+            console.log('   -> El admin no existe. Creando uno nuevo...');
             await db.query(`
                 INSERT INTO users (id, email, identificacion, password_hash, role)
                 VALUES (gen_random_uuid(), $1, $2, $3, 'admin')
             `, [adminEmail, adminId, adminHash]);
-            console.log(`- Usuario Admin creado por defecto: ${adminId} / ${adminPass}`);
+            console.log(`   -> ✅ Admin creado (ID: ${adminId} / PW: ${adminPass})`);
+        } else {
+            console.log('   -> ✅ Admin ya existe en la base de datos.');
         }
 
-        console.log('Inicialización de base de datos terminada satisfactoriamente.');
+        console.log('🏁 Inicialización completa.');
     } catch (error) {
-        console.error('ERROR CRÍTICO en la inicialización de la DB:', error);
-        // No cerramos el proceso para permitir que el backend intente seguir si es un error no fatal,
-        // o que el orquestador (Docker) maneje el reinicio.
+        console.error('❌ ERROR DURANTE LA INICIALIZACIÓN:', error);
         throw error;
     }
 }
 
 module.exports = initializeDatabase;
+

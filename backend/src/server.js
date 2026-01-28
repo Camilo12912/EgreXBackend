@@ -1,16 +1,15 @@
-const app = require('./app');
-const { config } = require('dotenv');
-const initializeDatabase = require('./config/init_db');
+// Load environment variables at the very beginning
+require('dotenv').config();
 
-// Load environment variables
-config();
+const app = require('./app');
+const initializeDatabase = require('./config/init_db');
 
 const PORT = process.env.PORT || 8080;
 
 // Initialize Database and then start server
 async function startServer() {
     try {
-        console.log('Iniciando sistema...');
+        console.log('Iniciando sistema EgreX...');
         await initializeDatabase();
 
         const server = app.listen(PORT, () => {
@@ -21,16 +20,23 @@ async function startServer() {
         process.on('unhandledRejection', (err) => {
             console.log('UNHANDLED REJECTION! 💥 Shutting down...');
             console.log(err.name, err.message);
-            server.close(() => {
+            if (server) {
+                server.close(() => process.exit(1));
+            } else {
                 process.exit(1);
-            });
+            }
         });
+
+        // Optional: module.exports = server; if we were in a closure, 
+        // but let's keep it simple for Docker.
     } catch (error) {
-        console.error('Fallo al iniciar el servidor debido a la base de datos:', error);
+        console.error('❌ Fallo crítico al iniciar el servidor:', error);
         process.exit(1);
     }
 }
 
 startServer();
 
-module.exports = server;
+// Properly export the app
+module.exports = app;
+
