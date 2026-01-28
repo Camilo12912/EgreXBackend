@@ -1,4 +1,4 @@
-const db = require('./src/config/db');
+const db = require('./db');
 const bcrypt = require('bcrypt');
 
 async function waitForDb(retries = 10, delay = 5000) {
@@ -112,7 +112,7 @@ async function initializeDatabase() {
         const adminHash = await bcrypt.hash(adminPass, 10);
         const adminId = 'admin';
 
-        const checkAdmin = await db.query('SELECT * FROM users WHERE email = $1', [adminEmail]);
+        const checkAdmin = await db.query('SELECT * FROM users WHERE email = $1 OR identificacion = $2', [adminEmail, adminId]);
         if (checkAdmin.rows.length === 0) {
             await db.query(`
                 INSERT INTO users (id, email, identificacion, password_hash, role)
