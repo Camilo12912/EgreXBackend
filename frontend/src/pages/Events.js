@@ -92,7 +92,8 @@ const Events = () => {
 
     const checkProfileStatus = async () => {
         try {
-            const response = await api.get('/profile');
+            // Add cache-buster to ensure we get fresh data after an update
+            const response = await api.get(`/profile?t=${new Date().getTime()}`);
             const data = response.data;
 
             if (!data) {
@@ -100,37 +101,32 @@ const Events = () => {
                 return;
             }
 
-            // check if key fields are missing (newly created profile)
+            // Check only for the absolutely essential fields to avoid false positives
             const isIncomplete =
                 !data.nombre?.toString().trim() ||
                 !data.programa_academico ||
-                !data.profesion?.toString().trim() ||
-                !data.correo_personal?.toString().trim() ||
-                !data.tratamiento_datos;
+                !data.profesion?.toString().trim();
 
-            // check 4 month rule
+            // Check 4 month rule
             let isOutdated = false;
-            const lastUpdate = data.fecha_actualizacion ? new Date(data.fecha_actualizacion) : null;
-
-            if (lastUpdate) {
+            if (data.fecha_actualizacion) {
+                const lastUpdate = new Date(data.fecha_actualizacion);
                 const fourMonthsAgo = new Date();
                 fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
                 if (lastUpdate < fourMonthsAgo) {
                     isOutdated = true;
                 }
             } else {
-                isOutdated = true; // No date means never updated
+                isOutdated = true; // No date means never updated/new
             }
 
             setProfileNeedsUpdate(isIncomplete || isOutdated);
         } catch (err) {
             console.error('Error fetching profile status:', err);
-            // If it's 404, it definitely needs update (no profile record)
+            // If profile doesn't exist yet (404), it definitely needs update
             if (err.response?.status === 404) {
                 setProfileNeedsUpdate(true);
             }
-            // For other errors (e.g. 500), we might not want to block them if they already had a session
-            // but for now, let's keep it safe.
         }
     };
 
