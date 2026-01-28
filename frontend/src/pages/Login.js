@@ -44,10 +44,9 @@ const Login = () => {
 
       if (user.needs_password_change) {
         navigate('/change-password');
-      } else if (user.role === 'admin') {
-        navigate('/admin/dashboard');
       } else {
-        navigate('/profile');
+        // Redirect to events as the main homepage for all other successful logins
+        navigate('/events');
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Credenciales incorrectas. Intente de nuevo.');

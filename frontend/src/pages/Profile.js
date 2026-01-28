@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Container, Alert, Row, Col, Card } from 'react-bootstrap';
-import { motion } from 'framer-motion';
-import { FaCheckCircle } from 'react-icons/fa';
+import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { FaUser, FaGraduationCap, FaBriefcase, FaCheckCircle, FaClipboardCheck } from 'react-icons/fa';
 import api from '../services/api';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     email: '',
     correo_personal: '',
@@ -104,10 +105,20 @@ const Profile = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const nextStep = () => {
+    window.scrollTo(0, 0);
+    setCurrentStep(prev => Math.min(prev + 1, 4));
+  };
+  const prevStep = () => {
+    window.scrollTo(0, 0);
+    setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
   const handleSubmit = async (e) => {
@@ -117,7 +128,7 @@ const Profile = () => {
 
     if (formData.tratamiento_datos !== 'SI') {
       setError('Debe aceptar y autorizar el tratamiento de datos personales para continuar.');
-      window.scrollTo(0, 0);
+      setCurrentStep(4);
       return;
     }
 
@@ -143,276 +154,273 @@ const Profile = () => {
       }
 
       await api.put('/profile', payload);
-      setMessage('¡Información actualizada correctamente!');
-      window.scrollTo(0, 0);
+      setMessage('¡Perfil actualizado con éxito!');
 
-      setTimeout(() => {
-        navigate('/events');
-      }, 2000);
+      // Update local storage user data if name changed
+      const user = JSON.parse(localStorage.getItem('user'));
+      localStorage.setItem('user', JSON.stringify({ ...user, nombre: formData.nombre }));
 
+      setTimeout(() => navigate('/events'), 2000);
     } catch (err) {
-      setError('Error al actualizar la información. Intente nuevamente.');
-      window.scrollTo(0, 0);
+      setError(err.response?.data?.message || 'Error al actualizar el perfil');
     } finally {
       setLoading(false);
+      window.scrollTo(0, 0);
     }
   };
 
+  const StepIndicator = () => {
+    const steps = [
+      { id: 1, icon: <FaUser />, label: 'Personal' },
+      { id: 2, icon: <FaGraduationCap />, label: 'Académica' },
+      { id: 3, icon: <FaBriefcase />, label: 'Laboral' },
+      { id: 4, icon: <FaClipboardCheck />, label: 'Finalizar' }
+    ];
+
+    return (
+      <div className="d-flex justify-content-between mb-5 position-relative px-2">
+        <div
+          className="position-absolute bg-light"
+          style={{ height: '2px', top: '20px', left: '10%', right: '10%', zIndex: 0 }}
+        />
+        <div
+          className="position-absolute bg-institutional transition-fast"
+          style={{
+            height: '2px',
+            top: '20px',
+            left: '10%',
+            width: `${(currentStep - 1) * 26.6}%`,
+            zIndex: 0
+          }}
+        />
+        {steps.map(step => (
+          <div key={step.id} className="text-center" style={{ zIndex: 1, width: '60px' }}>
+            <div
+              className={`rounded-circle d-flex align-items-center justify-content-center mx-auto transition-fast mb-2 shadow-sm
+                ${currentStep >= step.id ? 'bg-institutional text-white' : 'bg-white border text-muted'}`}
+              style={{ width: '40px', height: '40px' }}
+            >
+              {step.icon}
+            </div>
+            <span className={`small fw-bold ${currentStep === step.id ? 'text-institutional' : 'text-muted d-none d-md-block'}`}>
+              {step.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-serious min-vh-100 py-5">
+    <div className="bg-serious min-vh-100 py-4 py-md-5">
       <Container>
         <Row className="justify-content-center">
           <Col md={10} lg={8}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="text-center mb-5">
-                <span className="text-institutional fw-bold small text-uppercase tracking-widest mb-2 d-block">Actualización Obligatoria</span>
-                <h2 className="fw-bold display-6 mb-2">Perfil del Graduado</h2>
-                <p className="text-muted small">Tu información nos ayuda a brindarte mejores beneficios y oportunidades.</p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="text-center mb-4">
+                <h2 className="fw-bold display-6 mb-2">Completar Perfil</h2>
+                <p className="text-muted">Mantén tu información al día para recibir beneficios exclusivos.</p>
               </div>
 
-              {message && (
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                  <Alert variant="success" className="border-0 shadow-sm text-center py-3 mb-4 d-flex align-items-center justify-content-center gap-2">
-                    <FaCheckCircle className="text-success" /> {message}
-                  </Alert>
-                </motion.div>
-              )}
-              {error && (
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                  <Alert variant="danger" className="border-0 shadow-sm text-center py-3 mb-4 small text-danger">
-                    {error}
-                  </Alert>
-                </motion.div>
-              )}
+              <StepIndicator />
 
-              <Card className="pro-card border-0 overflow-hidden shadow-none">
+              {message && <Alert variant="success" className="border-0 shadow-sm rounded-4 mb-4 text-center py-3"><FaCheckCircle className="me-2" /> {message}</Alert>}
+              {error && <Alert variant="danger" className="border-0 shadow-sm rounded-4 mb-4 text-center py-3 small">{error}</Alert>}
+
+              <Card className="pro-card border-0 shadow-sm overflow-hidden mb-5">
                 <Card.Body className="p-4 p-md-5">
                   <Form onSubmit={handleSubmit}>
-                    {/* Section 1: Personal Info */}
-                    <div className="mb-5">
-                      <div className="d-flex align-items-center gap-2 mb-4">
-                        <div style={{ width: '4px', height: '24px', background: 'var(--institutional-red)' }} className="rounded"></div>
-                        <h5 className="fw-bold mb-0">Información Personal</h5>
-                      </div>
 
-                      <Row className="g-4">
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">CORREO INSTITUCIONAL</Form.Label>
-                            <Form.Control type="email" value={formData.email} disabled className="pro-input bg-light opacity-75" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">CORREO PERSONAL <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="email" name="correo_personal" value={formData.correo_personal} onChange={handleChange} className="pro-input" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={12}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">NOMBRE COMPLETO <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="pro-input text-start" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">IDENTIFICACIÓN <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="text" maxLength="10" name="identificacion" value={formData.identificacion} onChange={handleChange} className="pro-input" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">TELÉFONO <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="text" maxLength="10" name="telefono" value={formData.telefono} onChange={handleChange} className="pro-input" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={12}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">TÍTULO O PROFESIÓN <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="text" name="profesion" value={formData.profesion} onChange={handleChange} placeholder="Ej: Ingeniero de Software, Administrador, etc." className="pro-input" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">CIUDAD DE RESIDENCIA <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="text" name="ciudad_residencia" value={formData.ciudad_residencia} onChange={handleChange} className="pro-input" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">DIRECCIÓN <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="text" name="direccion_domicilio" value={formData.direccion_domicilio} onChange={handleChange} className="pro-input" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={12}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">BARRIO <span className="text-institutional">*</span></Form.Label>
-                            <Form.Control required type="text" name="barrio" value={formData.barrio} onChange={handleChange} className="pro-input" />
-                          </Form.Group>
-                        </Col>
-                      </Row>
-                    </div>
+                    {currentStep === 1 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                        <h5 className="fw-bold mb-4">01. Datos Personales</h5>
+                        <Row className="g-4">
+                          <Col md={6}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">CORREO INSTITUCIONAL</Form.Label>
+                              <Form.Control type="email" value={formData.email} disabled className="pro-input bg-light" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">CORREO PERSONAL *</Form.Label>
+                              <Form.Control required type="email" name="correo_personal" value={formData.correo_personal} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={12}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">NOMBRE COMPLETO *</Form.Label>
+                              <Form.Control required type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">IDENTIFICACIÓN *</Form.Label>
+                              <Form.Control required type="text" name="identificacion" value={formData.identificacion} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">TELÉFONO *</Form.Label>
+                              <Form.Control required type="text" name="telefono" value={formData.telefono} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">CIUDAD *</Form.Label>
+                              <Form.Control required type="text" name="ciudad_residencia" value={formData.ciudad_residencia} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">BARRIO *</Form.Label>
+                              <Form.Control required type="text" name="barrio" value={formData.barrio} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={12}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">DIRECCIÓN *</Form.Label>
+                              <Form.Control required type="text" name="direccion_domicilio" value={formData.direccion_domicilio} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                      </motion.div>
+                    )}
 
-                    {/* Section 2: Academic Info */}
-                    <div className="mb-5">
-                      <div className="d-flex align-items-center gap-2 mb-4">
-                        <div style={{ width: '4px', height: '24px', background: 'var(--institutional-red)' }} className="rounded"></div>
-                        <h5 className="fw-bold mb-0">Información Académica</h5>
-                      </div>
-                      <Row className="g-4">
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">PROGRAMA GRADUADO <span className="text-institutional">*</span></Form.Label>
-                            <Form.Select required name="programa_academico" value={formData.programa_academico} onChange={handleChange} className="pro-input">
-                              <option value="">Seleccione...</option>
-                              {programas.map((p, i) => <option key={i} value={p}>{p}</option>)}
-                            </Form.Select>
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary">SEDE <span className="text-institutional">*</span></Form.Label>
-                            <Form.Select required name="sede" value={formData.sede} onChange={handleChange} className="pro-input">
-                              <option value="">Seleccione...</option>
-                              {sedes.map((s, i) => <option key={i} value={s}>{s}</option>)}
-                            </Form.Select>
-                          </Form.Group>
-                        </Col>
-                      </Row>
-                    </div>
+                    {currentStep === 2 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                        <h5 className="fw-bold mb-4">02. Información Académica</h5>
+                        <Row className="g-4">
+                          <Col md={12}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">TÍTULO O PROFESIÓN *</Form.Label>
+                              <Form.Control required type="text" name="profesion" value={formData.profesion} onChange={handleChange} className="pro-input" />
+                            </Form.Group>
+                          </Col>
+                          <Col md={12}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">PROGRAMA GRADUADO *</Form.Label>
+                              <Form.Select required name="programa_academico" value={formData.programa_academico} onChange={handleChange} className="pro-input">
+                                <option value="">Seleccione...</option>
+                                {programas.map((p, i) => <option key={i} value={p}>{p}</option>)}
+                              </Form.Select>
+                            </Form.Group>
+                          </Col>
+                          <Col md={12}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">SEDE *</Form.Label>
+                              <Form.Select required name="sede" value={formData.sede} onChange={handleChange} className="pro-input">
+                                <option value="">Seleccione...</option>
+                                {sedes.map((s, i) => <option key={i} value={s}>{s}</option>)}
+                              </Form.Select>
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                      </motion.div>
+                    )}
 
-                    {/* Section 3: Labor Info */}
-                    <div className="mb-5">
-                      <div className="d-flex align-items-center gap-2 mb-4">
-                        <div style={{ width: '4px', height: '24px', background: 'var(--institutional-red)' }} className="rounded"></div>
-                        <h5 className="fw-bold mb-0">Situación Laboral</h5>
-                      </div>
-                      <Row className="g-4">
-                        <Col xs={12}>
-                          <Form.Group>
-                            <Form.Label className="small fw-bold text-secondary d-block mb-3">ACTUALMENTE LABORA <span className="text-institutional">*</span></Form.Label>
-                            <div className="d-flex flex-wrap gap-4">
-                              {opcionesLaborales.map((opt, i) => (
-                                <Form.Check
-                                  key={i}
-                                  type="radio"
-                                  label={opt}
-                                  name="laboralmente_activo"
-                                  value={opt}
-                                  checked={formData.laboralmente_activo === opt}
-                                  onChange={handleChange}
-                                  required
-                                  className="small"
-                                />
-                              ))}
+                    {currentStep === 3 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                        <h5 className="fw-bold mb-4">03. Situación Laboral</h5>
+                        <Row className="g-4">
+                          <Col md={12}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary d-block mb-3">¿ESTÁS LABORANDO ACTUALMENTE? *</Form.Label>
+                              <div className="d-flex flex-wrap gap-4">
+                                {opcionesLaborales.map((opt, i) => (
+                                  <Form.Check key={i} type="radio" label={opt} name="laboralmente_activo" value={opt} checked={formData.laboralmente_activo === opt} onChange={handleChange} required />
+                                ))}
+                              </div>
+                            </Form.Group>
+                          </Col>
+
+                          {formData.laboralmente_activo !== 'NO' && formData.laboralmente_activo !== '' && (
+                            <>
+                              <Col md={12}>
+                                <Form.Group>
+                                  <Form.Label className="small fw-bold text-secondary d-block mb-3">¿EJERZES TU PERFIL PROFESIONAL? *</Form.Label>
+                                  <div className="d-flex gap-4">
+                                    <Form.Check type="radio" label="SÍ" name="ejerce_perfil_profesional" value="SI" checked={formData.ejerce_perfil_profesional === 'SI'} onChange={handleChange} required />
+                                    <Form.Check type="radio" label="NO" name="ejerce_perfil_profesional" value="NO" checked={formData.ejerce_perfil_profesional === 'NO'} onChange={handleChange} />
+                                  </div>
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group>
+                                  <Form.Label className="small fw-bold text-secondary">CARGO ACTUAL</Form.Label>
+                                  <Form.Control type="text" name="cargo_actual" value={formData.cargo_actual} onChange={handleChange} className="pro-input" />
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group>
+                                  <Form.Label className="small fw-bold text-secondary">EMPRESA</Form.Label>
+                                  <Form.Control type="text" name="nombre_empresa" value={formData.nombre_empresa} onChange={handleChange} className="pro-input" />
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group>
+                                  <Form.Label className="small fw-bold text-secondary">SECTOR ECONÓMICO *</Form.Label>
+                                  <Form.Select required name="sector_economico" value={formData.sector_economico} onChange={handleChange} className="pro-input">
+                                    <option value="">Seleccione...</option>
+                                    {sectores.map((s, i) => <option key={i} value={s}>{s}</option>)}
+                                  </Form.Select>
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group>
+                                  <Form.Label className="small fw-bold text-secondary">RANGO SALARIAL *</Form.Label>
+                                  <Form.Select required name="rango_salarial" value={formData.rango_salarial} onChange={handleChange} className="pro-input">
+                                    <option value="">Seleccione...</option>
+                                    {rangosSalarios.map((r, i) => <option key={i} value={r}>{r}</option>)}
+                                  </Form.Select>
+                                </Form.Group>
+                              </Col>
+                            </>
+                          )}
+                        </Row>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 4 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                        <h5 className="fw-bold mb-4">04. Consentimiento y Logros</h5>
+                        <Row className="g-4">
+                          <Col md={12}>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary">MÉRITOS Y RECONOCIMIENTOS</Form.Label>
+                              <Form.Control as="textarea" rows={3} name="reconocimientos" value={formData.reconocimientos} onChange={handleChange} className="pro-input" placeholder="Opcional..." />
+                            </Form.Group>
+                          </Col>
+                          <Col md={12}>
+                            <div className="bg-light p-3 rounded-4 small text-muted mb-4">
+                              Autorizo a la FESC para el tratamiento de mis datos personales según su política de privacidad. Esta información será usada exclusivamente para fines institucionales.
                             </div>
-                          </Form.Group>
-                        </Col>
+                            <Form.Group>
+                              <Form.Label className="small fw-bold text-secondary d-block mb-3">¿AUTORIZA EL TRATAMIENTO DE DATOS? *</Form.Label>
+                              <div className="d-flex gap-4">
+                                <Form.Check type="radio" label="SÍ, AUTORIZO" name="tratamiento_datos" value="SI" checked={formData.tratamiento_datos === 'SI'} onChange={handleChange} required className="fw-bold text-success" />
+                                <Form.Check type="radio" label="NO AUTORIZO" name="tratamiento_datos" value="NO" checked={formData.tratamiento_datos === 'NO'} onChange={handleChange} />
+                              </div>
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                      </motion.div>
+                    )}
 
-                        {formData.laboralmente_activo !== 'NO' && (
-                          <>
-                            <Col md={12}>
-                              <Form.Group>
-                                <Form.Label className="small fw-bold text-secondary d-block mb-3">¿EJERCE SU PERFIL PROFESIONAL? <span className="text-institutional">*</span></Form.Label>
-                                <div className="d-flex gap-4">
-                                  <Form.Check type="radio" label="SÍ" name="ejerce_perfil_profesional" value="SI" checked={formData.ejerce_perfil_profesional === 'SI'} onChange={handleChange} required className="small" />
-                                  <Form.Check type="radio" label="NO" name="ejerce_perfil_profesional" value="NO" checked={formData.ejerce_perfil_profesional === 'NO'} onChange={handleChange} className="small" />
-                                </div>
-                              </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                              <Form.Group>
-                                <Form.Label className="small fw-bold text-secondary">CARGO ACTUAL</Form.Label>
-                                <Form.Control type="text" name="cargo_actual" value={formData.cargo_actual} onChange={handleChange} className="pro-input" />
-                              </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                              <Form.Group>
-                                <Form.Label className="small fw-bold text-secondary">SECTOR ECONÓMICO <span className="text-institutional">*</span></Form.Label>
-                                <Form.Select required name="sector_economico" value={formData.sector_economico} onChange={handleChange} className="pro-input">
-                                  <option value="">Seleccione...</option>
-                                  {sectores.map((s, i) => <option key={i} value={s}>{s}</option>)}
-                                </Form.Select>
-                              </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                              <Form.Group>
-                                <Form.Label className="small fw-bold text-secondary">EMPRESA / EMPRENDIMIENTO</Form.Label>
-                                <Form.Control type="text" name="nombre_empresa" value={formData.nombre_empresa} onChange={handleChange} className="pro-input" />
-                              </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                              <Form.Group>
-                                <Form.Label className="small fw-bold text-secondary">RANGO SALARIAL <span className="text-institutional">*</span></Form.Label>
-                                <Form.Select required name="rango_salarial" value={formData.rango_salarial} onChange={handleChange} className="pro-input">
-                                  <option value="">Seleccione...</option>
-                                  {rangosSalarios.map((r, i) => <option key={i} value={r}>{r}</option>)}
-                                </Form.Select>
-                              </Form.Group>
-                            </Col>
-                          </>
-                        )}
-                      </Row>
-                    </div>
-
-                    {/* Section 4: Consent */}
-                    <div>
-                      <div className="d-flex align-items-center gap-2 mb-4">
-                        <div style={{ width: '4px', height: '24px', background: 'var(--institutional-red)' }} className="rounded"></div>
-                        <h5 className="fw-bold mb-0">Consentimiento</h5>
-                      </div>
-                      <Col xs={12} className="mb-4">
-                        <Form.Label className="small fw-bold text-secondary">MÉRITOS Y RECONOCIMIENTOS (PREMIOS, PUBLICACIONES, LOGROS)</Form.Label>
-                        <Form.Control
-                          as="textarea"
-                          rows={3}
-                          name="reconocimientos"
-                          value={formData.reconocimientos}
-                          onChange={handleChange}
-                          className="pro-input"
-                          placeholder="Cuéntanos tus logros más importantes..."
-                        />
-                      </Col>
-
-                      <Col xs={12} className="mb-4">
-                        <Alert variant="light" className="small border-0 rounded-4 bg-light p-4 text-muted" style={{ lineHeight: '1.6' }}>
-                          Autorizo de manera voluntaria y previa a la FESC para tratar mis datos personales de acuerdo con su Política de Tratamiento de Datos. Mi información será utilizada para fines académicos, estadísticos y de seguimiento.
-                        </Alert>
-                        <Form.Group>
-                          <Form.Label className="small fw-bold text-secondary d-block mb-3">¿AUTORIZA EL TRATAMIENTO DE SUS DATOS? <span className="text-institutional">*</span></Form.Label>
-                          <div className="d-flex gap-4">
-                            <Form.Check
-                              type="radio"
-                              label="SÍ, AUTORIZO"
-                              name="tratamiento_datos"
-                              value="SI"
-                              checked={formData.tratamiento_datos === 'SI'}
-                              onChange={handleChange}
-                              required
-                              className="small fw-bold text-success"
-                            />
-                            <Form.Check
-                              type="radio"
-                              label="NO AUTORIZO"
-                              name="tratamiento_datos"
-                              value="NO"
-                              checked={formData.tratamiento_datos === 'NO'}
-                              onChange={handleChange}
-                              className="small"
-                            />
-                          </div>
-                        </Form.Group>
-                      </Col>
-                    </div>
-
-                    <div className="d-grid gap-2 mt-5 pt-4 border-top">
-                      <Button className="btn-institutional py-3 shadow-none" type="submit" disabled={loading}>
-                        {loading ? 'PROCESANDO...' : 'ACTUALIZAR INFORMACIÓN'}
+                    <div className="d-flex justify-content-between mt-5 pt-4 border-top">
+                      <Button variant="light" className={`px-4 fw-bold text-muted ${currentStep === 1 ? 'invisible' : ''}`} onClick={prevStep}>
+                        VOLVER
                       </Button>
+
+                      {currentStep < 4 ? (
+                        <Button className="btn-institutional px-5 fw-bold" onClick={nextStep}>
+                          CONTINUAR
+                        </Button>
+                      ) : (
+                        <Button className="btn-institutional px-5 fw-bold" type="submit" disabled={loading}>
+                          {loading ? 'GUARDANDO...' : 'FINALIZAR'}
+                        </Button>
+                      )}
                     </div>
                   </Form>
                 </Card.Body>
@@ -421,7 +429,7 @@ const Profile = () => {
           </Col>
         </Row>
       </Container>
-    </div >
+    </div>
   );
 };
 

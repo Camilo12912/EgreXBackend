@@ -65,10 +65,10 @@ const Events = () => {
         imageUrl: ''
     });
     const [error, setError] = useState('');
-    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
-    const [imageFile, setImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
+    const [profileNeedsUpdate, setProfileNeedsUpdate] = useState(false);
+
     const [participants, setParticipants] = useState([]);
     const [loadingParticipants, setLoadingParticipants] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
