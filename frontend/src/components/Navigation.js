@@ -15,17 +15,17 @@ const Navigation = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
+      const threshold = 50;
+      if (window.scrollY > threshold) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [scrolled]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -60,9 +60,11 @@ const Navigation = () => {
           <img
             src={logo}
             alt="Logo"
-            height={scrolled ? "35" : "45"}
-            className="d-inline-block align-top"
-            style={{ transition: 'all 0.3s ease' }}
+            style={{
+              transition: 'all 0.3s ease-in-out',
+              height: scrolled ? "36px" : "46px",
+              width: 'auto'
+            }}
           />
         </Navbar.Brand>
 
