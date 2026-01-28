@@ -4,11 +4,11 @@ services:
     container_name: egrex-db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: CAMILO129
-      POSTGRES_DB: bienestar
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CAMILO129}
+      POSTGRES_DB: ${POSTGRES_DB:-bienestar}
+    # En producción no exponemos el puerto de la DB al mundo por seguridad.
+    # Nginx/Backend se comunican internamente por la network.
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -18,17 +18,16 @@ services:
     build: .
     container_name: egrex-backend
     restart: always
-    ports:
-      - "8080:8080"
+    # El puerto 8080 solo es accesible INTERNAMENTE por el frontend (Nginx).
     environment:
       - PORT=8080
-      - NODE_ENV=development
+      - NODE_ENV=production
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=CAMILO129
-      - DB_NAME=bienestar
-      - JWT_SECRET=clave_super_secreta_123
+      - DB_USER=${POSTGRES_USER:-postgres}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-CAMILO129}
+      - DB_NAME=${POSTGRES_DB:-bienestar}
+      - JWT_SECRET=${JWT_SECRET:-clave_super_secreta_123}
     depends_on:
       - db
     networks:
