@@ -1,27 +1,38 @@
 const db = require('./db');
 const bcrypt = require('bcrypt');
 
-async function waitForDb(retries = 20, delay = 3000) {
-    console.log('--- Verificando conexión a la base de datos ---');
+async function waitForDb(retries = 30, delay = 2000) {
+    console.log('--- 🛡️ Verificando conexión a la base de datos ---');
     for (let i = 0; i < retries; i++) {
         try {
             await db.query('SELECT 1');
-            console.log('✅ Conexión exitosa a la base de datos.');
+            console.log('✅ Conexión establecida con PostgreSQL.');
             return;
         } catch (err) {
-            console.log(`⏳ DB no lista (intento ${i + 1}/${retries}). Error: ${err.message}`);
+            console.log(`⏳ [Intento ${i + 1}/${retries}] La base de datos no responde aún. Reintentando...`);
             await new Promise(res => setTimeout(res, delay));
         }
     }
-    throw new Error('❌ Fallo total de conexión tras agotarse los intentos.');
+    throw new Error('❌ No se pudo establecer conexión con la base de datos. Revisa que el contenedor "db" esté corriendo.');
 }
 
 async function initializeDatabase() {
     try {
-        console.log('--- Iniciando Proceso de Inicialización EgreX ---');
+        console.log('--- 🚀 Iniciando flujo de configuración EgreX ---');
         await waitForDb();
 
-        console.log('🛠 Creando/Verificando tablas...');
+        // 0. Clean Slate (A petición del usuario para entorno de pruebas)
+        console.log('🧹 Limpiando tablas existentes para un arranque limpio...');
+        await db.query(`
+            DROP TABLE IF EXISTS event_registrations CASCADE;
+            DROP TABLE IF EXISTS events CASCADE;
+            DROP TABLE IF EXISTS profile_modifications CASCADE;
+            DROP TABLE IF EXISTS egresados_profiles CASCADE;
+            DROP TABLE IF EXISTS users CASCADE;
+        `);
+        console.log('✨ Base de datos limpia (tablas eliminadas).');
+
+        console.log('🏗️ Creando estructura de tablas...');
 
         // 1. Users Table
         await db.query(`
@@ -36,7 +47,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('   -> Tabla [users] lista.');
+        console.log('   ✅ Tabla [users] creada.');
 
         // 2. Profiles Table
         await db.query(`
@@ -65,7 +76,7 @@ async function initializeDatabase() {
                 fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('   -> Tabla [egresados_profiles] lista.');
+        console.log('   ✅ Tabla [egresados_profiles] creada.');
 
         // 3. Profile History Table
         await db.query(`
@@ -80,7 +91,7 @@ async function initializeDatabase() {
                 change_type VARCHAR(50) DEFAULT 'update'
             );
         `);
-        console.log('   -> Tabla [profile_modifications] lista.');
+        console.log('   ✅ Tabla [profile_modifications] creada.');
 
         // 4. Events Table
         await db.query(`
@@ -95,7 +106,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('   -> Tabla [events] lista.');
+        console.log('   ✅ Tabla [events] creada.');
 
         // 5. Event Registrations Table
         await db.query(`
@@ -107,30 +118,25 @@ async function initializeDatabase() {
                 UNIQUE(event_id, user_id)
             );
         `);
-        console.log('   -> Tabla [event_registrations] lista.');
+        console.log('   ✅ Tabla [event_registrations] creada.');
 
         // 6. Seed Admin User
-        console.log('👤 Verificando usuario administrador...');
+        console.log('👤 Configurando cuenta de administrador...');
         const adminEmail = 'admin@fesc.edu.co';
         const adminPass = 'admin';
         const adminHash = await bcrypt.hash(adminPass, 10);
         const adminId = 'admin';
 
-        const checkAdmin = await db.query('SELECT * FROM users WHERE email = $1 OR identificacion = $2', [adminEmail, adminId]);
-        if (checkAdmin.rows.length === 0) {
-            console.log('   -> El admin no existe. Creando uno nuevo...');
-            await db.query(`
-                INSERT INTO users (id, email, identificacion, password_hash, role)
-                VALUES (gen_random_uuid(), $1, $2, $3, 'admin')
-            `, [adminEmail, adminId, adminHash]);
-            console.log(`   -> ✅ Admin creado (ID: ${adminId} / PW: ${adminPass})`);
-        } else {
-            console.log('   -> ✅ Admin ya existe en la base de datos.');
-        }
+        await db.query(`
+            INSERT INTO users (id, email, identificacion, password_hash, role)
+            VALUES (gen_random_uuid(), $1, $2, $3, 'admin')
+            ON CONFLICT (email) DO UPDATE SET password_hash = $3, identificacion = $2;
+        `, [adminEmail, adminId, adminHash]);
 
-        console.log('🏁 Inicialización completa.');
+        console.log(`   ✅ Admin configurado: ID "${adminId}" / Pass "${adminPass}"`);
+        console.log('🏁 Proceso de inicialización terminado satisfactoriamente.');
     } catch (error) {
-        console.error('❌ ERROR DURANTE LA INICIALIZACIÓN:', error);
+        console.error('❌ ERROR CRÍTICO EN INICIALIZACIÓN:', error);
         throw error;
     }
 }
