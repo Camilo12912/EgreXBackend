@@ -181,6 +181,12 @@ const Events = () => {
     };
 
     const handleRegister = async () => {
+        if (profileNeedsUpdate) {
+            setError('Importante: Tu perfil está incompleto o desactualizado (requerido cada 4 meses). Debes actualizar tus datos para inscribirte a eventos.');
+            setShowDetailModal(false);
+            window.scrollTo(0, 0);
+            return;
+        }
         try {
             await api.registerToEvent(selectedEvent.id);
             setStatusConfig({
