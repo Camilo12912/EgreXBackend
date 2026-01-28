@@ -91,19 +91,37 @@ const Events = () => {
     const checkProfileStatus = async () => {
         try {
             const response = await api.get('/profile');
-            if (response.data && response.data.fecha_actualizacion) {
-                const lastUpdate = new Date(response.data.fecha_actualizacion);
+            const data = response.data;
+
+            if (!data) {
+                setProfileNeedsUpdate(true);
+                return;
+            }
+
+            // check if key fields are missing (newly created profile)
+            const isIncomplete = !data.nombre || !data.programa_academico || !data.profesion || !data.correo_personal || !data.tratamiento_datos;
+
+            // check 4 month rule
+            let isOutdated = false;
+            if (data.fecha_actualizacion) {
+                const lastUpdate = new Date(data.fecha_actualizacion);
                 const fourMonthsAgo = new Date();
                 fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
-
                 if (lastUpdate < fourMonthsAgo) {
-                    setProfileNeedsUpdate(true);
+                    isOutdated = true;
                 }
             } else {
+                isOutdated = true; // No date means never updated
+            }
+
+            if (isIncomplete || isOutdated) {
                 setProfileNeedsUpdate(true);
+            } else {
+                setProfileNeedsUpdate(false);
             }
         } catch (err) {
             console.error('Error checking profile status:', err);
+            // On error, we usually want to be safe and assume it might need update if unauthorized
         }
     };
 
