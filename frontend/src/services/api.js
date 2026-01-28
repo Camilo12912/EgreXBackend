@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', // Use relative path to leverage Nginx proxy
+  baseURL: process.env.REACT_APP_API_URL || '/api', // Dinámico para producción o relativo para Nginx proxy
   headers: {
     'Content-Type': 'application/json',
   },
