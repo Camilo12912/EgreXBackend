@@ -11,6 +11,8 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - egrex-network
 
   backend:
     build: .
@@ -29,6 +31,13 @@ services:
       - JWT_SECRET=clave_super_secreta_123
     depends_on:
       - db
+    networks:
+      - egrex-network
 
 volumes:
   pgdata:
+
+
+networks:
+  egrex-network:
+    external: true
