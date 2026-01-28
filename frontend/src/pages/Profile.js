@@ -248,6 +248,12 @@ const Profile = () => {
                             <Form.Control required type="text" name="direccion_domicilio" value={formData.direccion_domicilio} onChange={handleChange} className="pro-input" />
                           </Form.Group>
                         </Col>
+                        <Col md={12}>
+                          <Form.Group>
+                            <Form.Label className="small fw-bold text-secondary">BARRIO <span className="text-institutional">*</span></Form.Label>
+                            <Form.Control required type="text" name="barrio" value={formData.barrio} onChange={handleChange} className="pro-input" />
+                          </Form.Group>
+                        </Col>
                       </Row>
                     </div>
 
