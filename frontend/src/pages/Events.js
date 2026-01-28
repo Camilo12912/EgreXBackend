@@ -71,6 +71,11 @@ const Events = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const [participants, setParticipants] = useState([]);
     const [loadingParticipants, setLoadingParticipants] = useState(false);
+    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [statusConfig, setStatusConfig] = useState({ type: 'success', title: '', message: '' });
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [eventToDelete, setEventToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [showParticipantsModal, setShowParticipantsModal] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user'));
@@ -89,14 +94,34 @@ const Events = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('¿Está seguro de eliminar este evento?')) {
-            try {
-                await api.delete(`/events/${id}`);
-                fetchEvents();
-            } catch (err) {
-                alert('Error eliminando evento');
-            }
+    const handleDeleteClick = (event) => {
+        setEventToDelete(event);
+        setShowDeleteConfirm(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!eventToDelete) return;
+        try {
+            setIsDeleting(true);
+            await api.delete(`/events/${eventToDelete.id}`);
+            fetchEvents();
+            setShowDeleteConfirm(false);
+            setEventToDelete(null);
+            setStatusConfig({
+                type: 'success',
+                title: 'Eliminado con éxito',
+                message: 'El evento ha sido removido permanentemente.'
+            });
+            setShowStatusModal(true);
+        } catch (err) {
+            setStatusConfig({
+                type: 'error',
+                title: 'Error al eliminar',
+                message: 'No se pudo eliminar el evento. Intente de nuevo.'
+            });
+            setShowStatusModal(true);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -108,12 +133,22 @@ const Events = () => {
     const handleRegister = async () => {
         try {
             await api.registerToEvent(selectedEvent.id);
-            alert('¡Inscripción exitosa!');
+            setStatusConfig({
+                type: 'success',
+                title: '¡Inscripción Exitosa!',
+                message: 'Te has registrado correctamente en el evento. Te esperamos.'
+            });
+            setShowStatusModal(true);
             setShowDetailModal(false);
             fetchEvents();
         } catch (err) {
             console.error('Error registering to event:', err);
-            alert('Error al inscribirse');
+            setStatusConfig({
+                type: 'error',
+                title: 'Error de Inscripción',
+                message: err.response?.data?.error || 'No se pudo procesar tu inscripción. Intenta más tarde.'
+            });
+            setShowStatusModal(true);
         }
     };
 
@@ -655,6 +690,50 @@ const Events = () => {
                         </div>
                     </Offcanvas.Body>
                 </Offcanvas>
+                {/* Modal de Confirmación de Eliminación */}
+                <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)} centered className="minimal-modal">
+                    <Modal.Body className="p-4 text-center">
+                        <div className="mb-4 text-danger">
+                            <FaTrash size={48} />
+                        </div>
+                        <h5 className="fw-bold mb-3 tracking-tight">¿Eliminar este evento?</h5>
+                        <p className="text-muted small mb-4">
+                            Esta acción es irreversible y se perderán todos los registros de asistencia asociados.
+                        </p>
+                        <div className="d-flex justify-content-center gap-3">
+                            <Button variant="light" className="px-4 fw-bold small" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>
+                                CANCELAR
+                            </Button>
+                            <Button variant="danger" className="px-4 fw-bold small" onClick={handleConfirmDelete} disabled={isDeleting}>
+                                {isDeleting ? <Spinner animation="border" size="sm" /> : 'SÍ, ELIMINAR'}
+                            </Button>
+                        </div>
+                    </Modal.Body>
+                </Modal>
+
+                {/* Modal de Estado (Éxito/Error) */}
+                <Modal
+                    show={showStatusModal}
+                    onHide={() => setShowStatusModal(false)}
+                    centered
+                    className="minimal-modal"
+                    size="sm"
+                >
+                    <Modal.Body className="p-4 text-center">
+                        <div className={`mb-3 ${statusConfig.type === 'success' ? 'text-success' : 'text-danger'}`}>
+                            {statusConfig.type === 'success' ? <FaCheckCircle size={48} /> : <FaTrash size={48} style={{ transform: 'rotate(180deg)' }} />}
+                        </div>
+                        <h5 className="fw-bold mb-2">{statusConfig.title}</h5>
+                        <p className="text-muted small mb-4">{statusConfig.message}</p>
+                        <Button
+                            variant={statusConfig.type === 'success' ? 'dark' : 'danger'}
+                            className="w-100 fw-bold small py-2"
+                            onClick={() => setShowStatusModal(false)}
+                        >
+                            ENTENDIDO
+                        </Button>
+                    </Modal.Body>
+                </Modal>
             </Container>
         </div>
     );

@@ -17,6 +17,8 @@ const AdminUsers = () => {
     const [showModal, setShowModal] = useState(false);
     const [userHistory, setUserHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
+    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [statusConfig, setStatusConfig] = useState({ type: 'success', title: '', message: '' });
     const [showHistory, setShowHistory] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newUser, setNewUser] = useState({
@@ -166,7 +168,12 @@ const AdminUsers = () => {
             setDeleting(false);
         } catch (err) {
             console.error('Error deleting:', err);
-            alert(err.response?.data?.error || 'Error al eliminar');
+            setStatusConfig({
+                type: 'error',
+                title: 'Error al eliminar',
+                message: err.response?.data?.error || 'No se pudo completar la operación. Intente de nuevo.'
+            });
+            setShowStatusModal(true);
             setDeleting(false);
         }
     };
@@ -752,6 +759,29 @@ const AdminUsers = () => {
                                 </Button>
                             </div>
                         </form>
+                    </Modal.Body>
+                </Modal>
+                {/* Modal de Estado (Éxito/Error) */}
+                <Modal
+                    show={showStatusModal}
+                    onHide={() => setShowStatusModal(false)}
+                    centered
+                    className="minimal-modal"
+                    size="sm"
+                >
+                    <Modal.Body className="p-4 text-center">
+                        <div className={`mb-3 ${statusConfig.type === 'success' ? 'text-success' : 'text-danger'}`}>
+                            {statusConfig.type === 'success' ? <FaCheckCircle size={48} /> : <FaTrash size={48} style={{ transform: 'rotate(180deg)' }} />}
+                        </div>
+                        <h5 className="fw-bold mb-2">{statusConfig.title}</h5>
+                        <p className="text-muted small mb-4">{statusConfig.message}</p>
+                        <Button
+                            variant={statusConfig.type === 'success' ? 'dark' : 'danger'}
+                            className="w-100 fw-bold small py-2"
+                            onClick={() => setShowStatusModal(false)}
+                        >
+                            ENTENDIDO
+                        </Button>
                     </Modal.Body>
                 </Modal>
             </Container>

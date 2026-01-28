@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 // No icons used in this component currently
 import { motion } from 'framer-motion';
@@ -11,6 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -160,12 +161,29 @@ const Login = () => {
         >
           <span
             className="text-institutional cursor-pointer small fw-medium text-decoration-none"
-            onClick={() => alert('Contact admin.')}
+            onClick={() => setShowSupportModal(true)}
             style={{ fontSize: '0.7rem', opacity: 0.8 }}
           >
             Soporte Técnico
           </span>
         </motion.div>
+
+        {/* Modal de Soporte */}
+        <Modal show={showSupportModal} onHide={() => setShowSupportModal(true)} centered className="minimal-modal" size="sm">
+          <Modal.Body className="p-4 text-center">
+            <div className="mb-3 text-institutional">
+              <img src={logo} alt="Logo" style={{ maxHeight: '40px' }} className="mb-2" />
+            </div>
+            <h6 className="fw-bold mb-3">Soporte Técnico</h6>
+            <p className="text-muted small mb-4">
+              Si presentas problemas con tu acceso, por favor contacta a la oficina de Bienestar Institucional o escribe a:
+              <br /><strong className="text-serious">sistemas@fesc.edu.co</strong>
+            </p>
+            <Button variant="dark" className="w-100 fw-bold small" onClick={() => setShowSupportModal(false)}>
+              ENTENDIDO
+            </Button>
+          </Modal.Body>
+        </Modal>
       </motion.div>
 
       <p className="position-absolute bottom-0 mb-4 small text-secondary opacity-25" style={{ fontSize: '0.65rem' }}>
