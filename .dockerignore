@@ -1,8 +1,4 @@
 node_modules
 npm-debug.log
-build
-dist
-.git
 .env
 Dockerfile
-docker-compose.yml
