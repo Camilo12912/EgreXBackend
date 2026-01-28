@@ -2,13 +2,13 @@ const db = require('../config/db');
 
 class User {
     static async create(user) {
-        const { email, passwordHash, role } = user;
+        const { email, passwordHash, role, identificacion } = user;
         const query = `
-      INSERT INTO users (id, email, password_hash, role)
-      VALUES (gen_random_uuid(), $1, $2, $3)
+      INSERT INTO users (id, email, password_hash, role, identificacion)
+      VALUES (gen_random_uuid(), $1, $2, $3, $4)
       RETURNING *;
     `;
-        const values = [email, passwordHash, role];
+        const values = [email, passwordHash, role, identificacion];
         const { rows } = await db.query(query, values);
         return rows[0];
     }

@@ -3,18 +3,22 @@ const AuthService = require('../services/auth.service');
 exports.login = async (req, res) => {
     try {
         const { identificacion, password } = req.body;
+        console.log(`[LOGIN ATTEMPT] ID: ${identificacion}`);
 
         if (!identificacion || !password) {
+            console.log('[LOGIN FAIL] Missing credentials');
             return res.status(400).json({ error: 'ID and password are required' });
         }
 
         const result = await AuthService.authenticate(identificacion, password);
+        console.log('[LOGIN SUCCESS] Authenticated');
         res.json(result);
     } catch (error) {
+        console.error('[LOGIN ERROR]', error.message);
         if (error.message === 'Credenciales inválidas') {
             return res.status(401).json({ error: error.message });
         }
-        console.error('Login error:', error);
+        console.error('Login error detail:', error);
         res.status(500).json({ error: 'Internal server error. Please try again.' });
     }
 };

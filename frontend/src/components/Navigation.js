@@ -70,13 +70,15 @@ const Navigation = () => {
               </Nav.Link>
             )}
 
-            <Nav.Link
-              as={Link}
-              to="/profile"
-              className={`nav-link-pro px-3 ${isActive('/profile') ? 'active' : ''}`}
-            >
-              Mi Perfil
-            </Nav.Link>
+            {user && user.role !== 'admin' && (
+              <Nav.Link
+                as={Link}
+                to="/profile"
+                className={`nav-link-pro px-3 ${isActive('/profile') ? 'active' : ''}`}
+              >
+                Mi Perfil
+              </Nav.Link>
+            )}
 
             <Nav.Link
               as={Link}

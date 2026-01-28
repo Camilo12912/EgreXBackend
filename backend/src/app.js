@@ -23,10 +23,10 @@ const profileRoutes = require('./routes/profile.routes');
 const adminRoutes = require('./routes/admin.routes');
 const eventsRoutes = require('./routes/events.routes');
 
-app.use('/auth', authRoutes);
-app.use('/profile', profileRoutes);
-app.use('/admin', adminRoutes);
-app.use('/events', eventsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/events', eventsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

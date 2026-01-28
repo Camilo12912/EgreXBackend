@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Button, Modal, Spinner, Alert, Row, Col, Card } from 'react-bootstrap';
+import { Container, Table, Button, Modal, Spinner, Alert, Row, Col, Card, Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUsers, FaHistory, FaUserPlus, FaFilePdf, FaFileExcel, FaTrash } from 'react-icons/fa';
+import { FaUsers, FaHistory, FaUserPlus, FaFilePdf, FaFileExcel, FaTrash, FaDownload, FaFileUpload } from 'react-icons/fa';
 import api from '../services/api'; // Keep for specific history calls unless migrated too
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { useAlumni } from '../presentation/hooks/useAlumni';
 
 const AdminUsers = () => {
@@ -33,6 +34,10 @@ const AdminUsers = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null); // { type: 'single'|'bulk', userId?: number }
     const [deleting, setDeleting] = useState(false);
+
+    // Search Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterField, setFilterField] = useState('all'); // all, email, nombre, identificacion
 
     useEffect(() => {
         fetchUsers();
@@ -120,7 +125,7 @@ const AdminUsers = () => {
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelectedUsers(users.map(u => u.id));
+            setSelectedUsers(filteredUsers.map(u => u.id));
         } else {
             setSelectedUsers([]);
         }
@@ -195,6 +200,36 @@ const AdminUsers = () => {
         doc.save(`reporte_egresados_${new Date().getTime()}.pdf`);
     };
 
+    const exportToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(users.map(user => ({
+            Nombre: user.nombre || "-",
+            Email: user.email,
+            Cédula: user.identificacion || "-",
+            Programa: user.programa_academico || "-",
+            Sede: user.sede || "-",
+            Laborando: user.laboralmente_activo || "-"
+        })));
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Egresados");
+        XLSX.writeFile(workbook, `reporte_egresados_${new Date().getTime()}.xlsx`);
+    };
+
+    const filteredUsers = users.filter(user => {
+        if (!searchTerm) return true;
+        const lowerTerm = searchTerm.toLowerCase();
+
+        if (filterField === 'email') return user.email.toLowerCase().includes(lowerTerm);
+        if (filterField === 'nombre') return (user.nombre || '').toLowerCase().includes(lowerTerm);
+        if (filterField === 'identificacion') return (user.identificacion || '').toLowerCase().includes(lowerTerm);
+
+        // 'all' case
+        return (
+            user.email.toLowerCase().includes(lowerTerm) ||
+            (user.nombre || '').toLowerCase().includes(lowerTerm) ||
+            (user.identificacion || '').toLowerCase().includes(lowerTerm)
+        );
+    });
+
     if (loading) {
         return (
             <div className="bg-serious min-vh-100 d-flex align-items-center justify-content-center">
@@ -216,73 +251,140 @@ const AdminUsers = () => {
                         <p className="text-muted mb-0 small uppercase">Administración centralizada de graduados registrados</p>
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="d-flex gap-2"
-                    >
-                        <input
-                            type="file"
-                            accept=".xlsx,.xls"
-                            onChange={handleExcelUpload}
-                            style={{ display: 'none' }}
-                            id="excel-upload-input"
-                        />
-                        <Button
-                            variant="outline-success"
-                            className="px-3 shadow-none small fw-bold"
-                            onClick={() => document.getElementById('excel-upload-input').click()}
-                            disabled={uploading}
+                    <div className="d-flex align-items-center gap-3">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="d-flex align-items-center gap-2"
                         >
-                            <FaFileExcel className="me-2" /> EXCEL
-                        </Button>
-                        <Button variant="outline-danger" className="px-3 shadow-none small fw-bold" onClick={exportToPDF}>
-                            <FaFilePdf className="me-2" /> PDF
-                        </Button>
-                        {selectedUsers.length > 0 && (
-                            <Button
-                                variant="danger"
-                                type="button"
-                                className="px-3 shadow-none small fw-bold"
-                                onClick={handleBulkDeleteClick}
-                            >
-                                <FaTrash className="me-2" /> ELIMINAR ({selectedUsers.length})
-                            </Button>
-                        )}
+                            <input
+                                type="file"
+                                accept=".xlsx,.xls"
+                                onChange={handleExcelUpload}
+                                style={{ display: 'none' }}
+                                id="excel-upload-input"
+                            />
+
+                            <OverlayTrigger placement="top" overlay={<Tooltip>Subir Base de Datos (Excel)</Tooltip>}>
+                                <Button
+                                    variant="outline-success"
+                                    size="sm"
+                                    className="p-2 shadow-none d-flex align-items-center justify-content-center"
+                                    onClick={() => document.getElementById('excel-upload-input').click()}
+                                    disabled={uploading}
+                                    style={{ width: '38px', height: '38px', borderRadius: '10px' }}
+                                >
+                                    <FaFileUpload size={18} />
+                                </Button>
+                            </OverlayTrigger>
+
+                            <OverlayTrigger placement="top" overlay={<Tooltip>Descargar Lista</Tooltip>}>
+                                <Dropdown>
+                                    <Dropdown.Toggle
+                                        variant="outline-secondary"
+                                        size="sm"
+                                        className="p-2 shadow-none d-flex align-items-center justify-content-center no-caret"
+                                        id="dropdown-basic"
+                                        style={{ width: '38px', height: '38px', borderRadius: '10px' }}
+                                    >
+                                        <FaDownload size={18} />
+                                    </Dropdown.Toggle>
+
+                                    <Dropdown.Menu align="end" className="border-0 shadow-sm dropdown-menu-minimal">
+                                        <Dropdown.Item onClick={exportToPDF} className="d-flex align-items-center gap-2 py-2">
+                                            <FaFilePdf className="text-danger" /> <span>Exportar PDF</span>
+                                        </Dropdown.Item>
+                                        <Dropdown.Item onClick={exportToExcel} className="d-flex align-items-center gap-2 py-2">
+                                            <FaFileExcel className="text-success" /> <span>Exportar Excel</span>
+                                        </Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </OverlayTrigger>
+
+                            {selectedUsers.length > 0 && (
+                                <OverlayTrigger placement="top" overlay={<Tooltip>Eliminar {selectedUsers.length} seleccionados</Tooltip>}>
+                                    <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        className="p-2 shadow-none d-flex align-items-center justify-content-center"
+                                        onClick={handleBulkDeleteClick}
+                                        disabled={uploading}
+                                        style={{ width: '38px', height: '38px', borderRadius: '10px' }}
+                                    >
+                                        <FaTrash size={16} />
+                                    </Button>
+                                </OverlayTrigger>
+                            )}
+                        </motion.div>
+
                         <Button className="btn-institutional px-3 shadow-none small fw-bold" onClick={() => setShowAddModal(true)}>
                             <FaUserPlus className="me-2" /> REGISTRAR EGRESADO
                         </Button>
-                    </motion.div>
+                    </div>
                 </div>
 
                 {error && <Alert variant="danger" className="border-0 shadow-sm small text-center">{error}</Alert>}
 
-                {uploadResult && (
-                    <Alert
-                        variant={uploadResult.error ? "danger" : "success"}
-                        className="border-0 shadow-sm small"
-                        dismissible
-                        onClose={() => setUploadResult(null)}
-                    >
-                        {uploadResult.error ? (
-                            uploadResult.error
-                        ) : (
-                            <>
-                                <strong>Importación completada:</strong> {uploadResult.report.success} exitosos, {uploadResult.report.failed} fallidos.
-                                {uploadResult.report.errors.length > 0 && (
-                                    <div className="mt-2 small">
-                                        <strong>Errores:</strong>
-                                        <ul className="mb-0 mt-1">
-                                            {uploadResult.report.errors.slice(0, 5).map((err, idx) => (
-                                                <li key={idx}>{err.user}: {err.error}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </Alert>
-                )}
+                {/* Filtros de Búsqueda */}
+                <Card className="border-0 shadow-sm mb-4">
+                    <Card.Body className="p-3">
+                        <Row className="g-3 align-items-center">
+                            <Col md={3}>
+                                <select
+                                    className="pro-input w-100 p-2"
+                                    value={filterField}
+                                    onChange={(e) => setFilterField(e.target.value)}
+                                >
+                                    <option value="all">Buscar en todos...</option>
+                                    <option value="email">Por Email</option>
+                                    <option value="nombre">Por Nombre</option>
+                                    <option value="identificacion">Por Cédula</option>
+                                </select>
+                            </Col>
+                            <Col md={9}>
+                                <input
+                                    type="text"
+                                    placeholder="Escriba para buscar..."
+                                    className="pro-input w-100 p-2"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                        <div className="text-muted small mt-2">
+                            Mostrando {filteredUsers.length} de {users.length} egresados
+                        </div>
+                    </Card.Body>
+                </Card>
+
+                {
+                    uploadResult && (
+                        <Alert
+                            variant={uploadResult.error ? "danger" : "success"}
+                            className="border-0 shadow-sm small"
+                            dismissible
+                            onClose={() => setUploadResult(null)}
+                        >
+                            {uploadResult.error ? (
+                                uploadResult.error
+                            ) : (
+                                <>
+                                    <strong>Importación completada:</strong> {uploadResult.report.success} exitosos, {uploadResult.report.failed} fallidos.
+                                    {uploadResult.report.errors.length > 0 && (
+                                        <div className="mt-2 small">
+                                            <strong>Errores:</strong>
+                                            <ul className="mb-0 mt-1">
+                                                {uploadResult.report.errors.slice(0, 5).map((err, idx) => (
+                                                    <li key={idx}>{err.user}: {err.error}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </Alert>
+                    )
+                }
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -298,7 +400,7 @@ const AdminUsers = () => {
                                             <input
                                                 type="checkbox"
                                                 className="form-check-input"
-                                                checked={selectedUsers.length === users.length && users.length > 0}
+                                                checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
                                                 onChange={handleSelectAll}
                                             />
                                         </th>
@@ -309,7 +411,7 @@ const AdminUsers = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.map((user, idx) => (
+                                    {filteredUsers.map((user, idx) => (
                                         <motion.tr
                                             key={user.id}
                                             initial={{ opacity: 0 }}

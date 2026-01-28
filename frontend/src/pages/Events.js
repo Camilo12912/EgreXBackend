@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Modal, Form, Alert, Badge, Spinner, Table } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Form, Alert, Badge, Spinner, Table, Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCalendarAlt, FaMapMarkerAlt, FaPlus, FaTrash, FaChevronRight, FaUserCheck, FaUsers, FaFilePdf } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaPlus, FaTrash, FaChevronRight, FaUserCheck, FaUsers, FaFilePdf, FaFileExcel, FaDownload } from 'react-icons/fa';
 import api from '../services/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from "xlsx";
 
 const Countdown = ({ targetDate }) => {
     const calculateTimeLeft = () => {
@@ -168,6 +169,20 @@ const Events = () => {
         });
 
         doc.save(`inscritos_${selectedEvent.title.replace(/\s+/g, '_').toLowerCase()}.pdf`);
+    };
+
+    const exportToExcel = () => {
+        if (!selectedEvent || participants.length === 0) return;
+
+        const worksheet = XLSX.utils.json_to_sheet(participants.map(p => ({
+            Nombre: p.nombre || 'Sin perfil',
+            Email: p.email,
+            Programa: p.programa_academico || '-',
+            Registro: new Date(p.registered_at).toLocaleString()
+        })));
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Inscritos");
+        XLSX.writeFile(workbook, `inscritos_${selectedEvent.title.replace(/\s+/g, '_').toLowerCase()}.xlsx`);
     };
 
     const handleCreate = async (e) => {
@@ -570,9 +585,27 @@ const Events = () => {
                                             <h4 className="fw-bold mb-0">Egresados Inscritos</h4>
                                         </div>
                                         {participants.length > 0 && (
-                                            <Button variant="outline-danger" size="sm" className="d-flex align-items-center gap-2" onClick={exportToPDF}>
-                                                <FaFilePdf /> DESCARGAR PDF
-                                            </Button>
+                                            <OverlayTrigger placement="top" overlay={<Tooltip>Descargar Lista</Tooltip>}>
+                                                <Dropdown>
+                                                    <Dropdown.Toggle
+                                                        variant="outline-secondary"
+                                                        size="sm"
+                                                        className="p-2 shadow-none d-flex align-items-center justify-content-center no-caret"
+                                                        style={{ width: '36px', height: '36px', borderRadius: '8px' }}
+                                                    >
+                                                        <FaDownload size={16} />
+                                                    </Dropdown.Toggle>
+
+                                                    <Dropdown.Menu align="end" className="border-0 shadow-sm dropdown-menu-minimal">
+                                                        <Dropdown.Item onClick={exportToPDF} className="d-flex align-items-center gap-2 py-2 small">
+                                                            <FaFilePdf className="text-danger" /> <span>Exportar PDF</span>
+                                                        </Dropdown.Item>
+                                                        <Dropdown.Item onClick={exportToExcel} className="d-flex align-items-center gap-2 py-2 small">
+                                                            <FaFileExcel className="text-success" /> <span>Exportar Excel</span>
+                                                        </Dropdown.Item>
+                                                    </Dropdown.Menu>
+                                                </Dropdown>
+                                            </OverlayTrigger>
                                         )}
                                     </div>
 
