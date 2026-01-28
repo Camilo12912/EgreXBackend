@@ -179,14 +179,15 @@ const AdminUsers = () => {
         doc.setTextColor(100);
         doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 28);
 
-        const tableColumn = ["Nombre", "Email", "Cédula", "Programa", "Sede", "Laborando"];
+        const tableColumn = ["Nombre", "Email", "Cédula", "Programa", "Situación Laboral", "Empresa", "Cargo"];
         const tableRows = users.map(user => [
             user.nombre || "-",
             user.email,
             user.identificacion || "-",
             user.programa_academico || "-",
-            user.sede || "-",
-            user.laboralmente_activo || "-"
+            user.laboralmente_activo || "-",
+            user.nombre_empresa || user.empresa || "-",
+            user.cargo_actual || "-"
         ]);
 
         autoTable(doc, {
@@ -202,12 +203,26 @@ const AdminUsers = () => {
 
     const exportToExcel = () => {
         const worksheet = XLSX.utils.json_to_sheet(users.map(user => ({
-            Nombre: user.nombre || "-",
-            Email: user.email,
-            Cédula: user.identificacion || "-",
-            Programa: user.programa_academico || "-",
-            Sede: user.sede || "-",
-            Laborando: user.laboralmente_activo || "-"
+            "Nombre Completo": user.nombre || "-",
+            "Email Institucional": user.email,
+            "Cédula": user.identificacion || "-",
+            "Programa Académico": user.programa_academico || "-",
+            "Sede": user.sede || "-",
+            "Título/Profesión": user.profesion || "-",
+            "Correo Personal": user.correo_personal || "-",
+            "Teléfono/Celular": user.telefono || "-",
+            "Ciudad": user.ciudad_residencia || "-",
+            "Dirección": user.direccion_domicilio || "-",
+            "Barrio": user.barrio || "-",
+            "Situación Laboral": user.laboralmente_activo || "-",
+            "Ejerce Perfil": user.ejerce_perfil_profesional || "-",
+            "Rango Salarial": user.rango_salarial || "-",
+            "Empresa": user.nombre_empresa || user.empresa || "-",
+            "Cargo": user.cargo_actual || "-",
+            "Sector Económico": user.sector_economico || "-",
+            "Reconocimientos": user.reconocimientos || "-",
+            "Habeas Data": user.tratamiento_datos ? "Aceptado" : "Pendiente",
+            "Última Actualización": user.fecha_actualizacion ? new Date(user.fecha_actualizacion).toLocaleDateString() : "Nunca"
         })));
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Egresados");
@@ -479,45 +494,79 @@ const AdminUsers = () => {
 
                                     {!showHistory ? (
                                         <>
-                                            <Row className="g-5">
+                                            <Row className="g-4">
                                                 <Col md={6}>
-                                                    <div className="d-flex align-items-center gap-2 mb-4">
-                                                        <div style={{ width: '3px', height: '18px', background: 'var(--institutional-red)' }} className="rounded"></div>
-                                                        <h6 className="fw-bold mb-0">DATOS PERSONALES</h6>
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <div style={{ width: '3px', height: '14px', background: 'var(--institutional-red)' }} className="rounded"></div>
+                                                        <h6 className="fw-bold mb-0 small uppercase">Datos de Contacto</h6>
                                                     </div>
-                                                    <div className="small text-serious d-grid gap-2">
-                                                        <div className="d-flex justify-content-between"><span className="text-muted">ID</span> <span>{selectedUser.identificacion || '-'}</span></div>
-                                                        <div className="d-flex justify-content-between"><span className="text-muted">Personal</span> <span>{selectedUser.correo_personal || '-'}</span></div>
-                                                        <div className="d-flex justify-content-between"><span className="text-muted">Teléfono</span> <span>{selectedUser.telefono || '-'}</span></div>
-                                                        <div className="d-flex justify-content-between"><span className="text-muted">Residencia</span> <span>{selectedUser.ciudad_residencia || '-'}</span></div>
+                                                    <div className="small text-serious d-grid gap-2 ps-2 border-start ms-1">
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Cédula</span> <span>{selectedUser.identificacion || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Celular</span> <span>{selectedUser.telefono || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Personal</span> <span className="text-lowercase">{selectedUser.correo_personal || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Institucional</span> <span className="text-lowercase">{selectedUser.email || '-'}</span></div>
+                                                    </div>
+
+                                                    <div className="d-flex align-items-center gap-2 mb-3 mt-4">
+                                                        <div style={{ width: '3px', height: '14px', background: 'var(--institutional-red)' }} className="rounded"></div>
+                                                        <h6 className="fw-bold mb-0 small uppercase">Residencia</h6>
+                                                    </div>
+                                                    <div className="small text-serious d-grid gap-2 ps-2 border-start ms-1">
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Ciudad</span> <span>{selectedUser.ciudad_residencia || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Dirección</span> <span className="text-end">{selectedUser.direccion_domicilio || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Barrio</span> <span>{selectedUser.barrio || '-'}</span></div>
                                                     </div>
                                                 </Col>
+
                                                 <Col md={6}>
-                                                    <div className="d-flex align-items-center gap-2 mb-4">
-                                                        <div style={{ width: '3px', height: '18px', background: 'var(--institutional-red)' }} className="rounded"></div>
-                                                        <h6 className="fw-bold mb-0">DATOS ACADÉMICOS</h6>
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <div style={{ width: '3px', height: '14px', background: 'var(--institutional-red)' }} className="rounded"></div>
+                                                        <h6 className="fw-bold mb-0 small uppercase">Perfil Académico</h6>
                                                     </div>
-                                                    <div className="small text-serious d-grid gap-2">
+                                                    <div className="small text-serious d-grid gap-2 ps-2 border-start ms-1">
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Título</span> <span>{selectedUser.profesion || '-'}</span></div>
                                                         <div className="d-flex justify-content-between"><span className="text-muted">Programa</span> <span className="text-end">{selectedUser.programa_academico || '-'}</span></div>
                                                         <div className="d-flex justify-content-between"><span className="text-muted">Sede</span> <span>{selectedUser.sede || '-'}</span></div>
-                                                        <div className="d-flex justify-content-between"><span className="text-muted">Actualizado</span> <span>{selectedUser.fecha_actualizacion ? new Date(selectedUser.fecha_actualizacion).toLocaleDateString() : 'Nunca'}</span></div>
+                                                    </div>
+
+                                                    <div className="d-flex align-items-center gap-2 mb-3 mt-4">
+                                                        <div style={{ width: '3px', height: '14px', background: 'var(--institutional-red)' }} className="rounded"></div>
+                                                        <h6 className="fw-bold mb-0 small uppercase">Situación Laboral</h6>
+                                                    </div>
+                                                    <div className="small text-serious d-grid gap-2 ps-2 border-start ms-1">
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Estado</span> <span className="fw-bold text-institutional">{selectedUser.laboralmente_activo || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Ejerce Perfil</span> <span>{selectedUser.ejerce_perfil_profesional || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Salario</span> <span>{selectedUser.rango_salarial || '-'}</span></div>
                                                     </div>
                                                 </Col>
+
                                                 <Col md={12}>
-                                                    <div className="d-flex align-items-center gap-2 mb-4">
-                                                        <div style={{ width: '3px', height: '18px', background: 'var(--institutional-red)' }} className="rounded"></div>
-                                                        <h6 className="fw-bold mb-0">INFORMACIÓN LABORAL</h6>
+                                                    <div className="d-flex align-items-center gap-2 mb-3 mt-2">
+                                                        <div style={{ width: '3px', height: '14px', background: 'var(--institutional-red)' }} className="rounded"></div>
+                                                        <h6 className="fw-bold mb-0 small uppercase">Detalle de Empleo</h6>
                                                     </div>
-                                                    <Row className="g-4">
-                                                        <Col md={6} className="small text-serious d-grid gap-2">
-                                                            <div className="d-flex justify-content-between"><span className="text-muted">Situación</span> <span className="fw-bold text-institutional">{selectedUser.laboralmente_activo || '-'}</span></div>
-                                                            <div className="d-flex justify-content-between"><span className="text-muted">Cargo</span> <span>{selectedUser.cargo_actual || '-'}</span></div>
-                                                        </Col>
-                                                        <Col md={6} className="small text-serious d-grid gap-2">
-                                                            <div className="d-flex justify-content-between"><span className="text-muted">Empresa</span> <span className="text-end">{selectedUser.nombre_empresa || '-'}</span></div>
-                                                            <div className="d-flex justify-content-between"><span className="text-muted">Consentimiento</span> <span>{selectedUser.tratamiento_datos ? 'Sí' : 'No'}</span></div>
-                                                        </Col>
-                                                    </Row>
+                                                    <div className="small text-serious d-grid gap-2 ps-2 border-start ms-1">
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Empresa</span> <span className="fw-bold">{selectedUser.nombre_empresa || selectedUser.empresa || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Cargo</span> <span>{selectedUser.cargo_actual || '-'}</span></div>
+                                                        <div className="d-flex justify-content-between"><span className="text-muted">Sector</span> <span>{selectedUser.sector_economico || '-'}</span></div>
+                                                    </div>
+                                                </Col>
+
+                                                <Col md={12}>
+                                                    <div className="d-flex align-items-center gap-2 mb-3 mt-2">
+                                                        <div style={{ width: '3px', height: '14px', background: 'var(--institutional-red)' }} className="rounded"></div>
+                                                        <h6 className="fw-bold mb-0 small uppercase">Reconocimientos y Otros</h6>
+                                                    </div>
+                                                    <div className="small text-serious ps-2 border-start ms-1">
+                                                        <p className="text-muted mb-1">Méritos / Premios:</p>
+                                                        <p className="mb-3">{selectedUser.reconocimientos || 'Sin reconocimientos registrados.'}</p>
+                                                        <div className="d-flex justify-content-between border-top pt-2">
+                                                            <span className="text-muted italic">Actualizado: {selectedUser.fecha_actualizacion ? new Date(selectedUser.fecha_actualizacion).toLocaleDateString() : 'Pendiente'}</span>
+                                                            <span className={`fw-bold ${selectedUser.tratamiento_datos ? 'text-success' : 'text-danger'}`}>
+                                                                {selectedUser.tratamiento_datos ? '✓ Datos Autorizados' : '✗ Datos No Autorizados'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </Col>
                                             </Row>
 

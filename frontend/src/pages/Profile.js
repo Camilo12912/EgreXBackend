@@ -344,15 +344,28 @@ const Profile = () => {
                         <h5 className="fw-bold mb-0">Consentimiento</h5>
                       </div>
                       <Col xs={12} className="mb-4">
+                        <Form.Label className="small fw-bold text-secondary">MÉRITOS Y RECONOCIMIENTOS (PREMIOS, PUBLICACIONES, LOGROS)</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          name="reconocimientos"
+                          value={formData.reconocimientos}
+                          onChange={handleChange}
+                          className="pro-input"
+                          placeholder="Cuéntanos tus logros más importantes..."
+                        />
+                      </Col>
+
+                      <Col xs={12} className="mb-4">
                         <Alert variant="light" className="small border-0 rounded-4 bg-light p-4 text-muted" style={{ lineHeight: '1.6' }}>
                           Autorizo de manera voluntaria y previa a la FESC para tratar mis datos personales de acuerdo con su Política de Tratamiento de Datos. Mi información será utilizada para fines académicos, estadísticos y de seguimiento.
                         </Alert>
                         <Form.Group>
-                          <Form.Label className="small fw-bold text-secondary d-block mb-3">¿ACEPTA EL TRATAMIENTO DE DATOS? <span className="text-institutional">*</span></Form.Label>
+                          <Form.Label className="small fw-bold text-secondary d-block mb-3">¿AUTORIZA EL TRATAMIENTO DE SUS DATOS? <span className="text-institutional">*</span></Form.Label>
                           <div className="d-flex gap-4">
                             <Form.Check
                               type="radio"
-                              label="SÍ, ACEPTO"
+                              label="SÍ, AUTORIZO"
                               name="tratamiento_datos"
                               value="SI"
                               checked={formData.tratamiento_datos === 'SI'}
@@ -362,7 +375,7 @@ const Profile = () => {
                             />
                             <Form.Check
                               type="radio"
-                              label="NO ACEPTO"
+                              label="NO AUTORIZO"
                               name="tratamiento_datos"
                               value="NO"
                               checked={formData.tratamiento_datos === 'NO'}
