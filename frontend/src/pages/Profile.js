@@ -113,6 +113,35 @@ const Profile = () => {
   };
 
   const nextStep = () => {
+    // Basic validation for current step
+    if (currentStep === 1) {
+      if (!formData.correo_personal || !formData.nombre || !formData.identificacion || !formData.telefono || !formData.ciudad_residencia || !formData.barrio || !formData.direccion_domicilio) {
+        setError('Por favor complete todos los campos obligatorios del paso 1.');
+        window.scrollTo(0, 0);
+        return;
+      }
+    } else if (currentStep === 2) {
+      if (!formData.profesion || !formData.programa_academico || !formData.sede) {
+        setError('Por favor complete todos los campos obligatorios del paso 2.');
+        window.scrollTo(0, 0);
+        return;
+      }
+    } else if (currentStep === 3) {
+      if (!formData.laboralmente_activo) {
+        setError('Por favor responda si está laborando actualmente.');
+        window.scrollTo(0, 0);
+        return;
+      }
+      if (formData.laboralmente_activo !== 'NO') {
+        if (!formData.ejerce_perfil_profesional || !formData.sector_economico || !formData.rango_salarial) {
+          setError('Por favor complete todos los campos obligatorios del paso 3.');
+          window.scrollTo(0, 0);
+          return;
+        }
+      }
+    }
+
+    setError('');
     window.scrollTo(0, 0);
     setCurrentStep(prev => Math.min(prev + 1, 4));
   };
@@ -202,11 +231,11 @@ const Profile = () => {
             <div
               className={`rounded-circle d-flex align-items-center justify-content-center mx-auto transition-fast mb-2 shadow-sm
                 ${currentStep >= step.id ? 'bg-institutional text-white' : 'bg-white border text-muted'}`}
-              style={{ width: '40px', height: '40px' }}
+              style={{ width: '40px', height: '40px', color: currentStep >= step.id ? 'white' : 'var(--institutional-red)' }}
             >
               {step.icon}
             </div>
-            <span className={`small fw-bold ${currentStep === step.id ? 'text-institutional' : 'text-muted d-none d-md-block'}`}>
+            <span className={`small fw-bold ${currentStep >= step.id ? 'text-institutional' : 'text-muted d-none d-md-block'}`}>
               {step.label}
             </span>
           </div>
@@ -351,14 +380,14 @@ const Profile = () => {
                               </Col>
                               <Col md={6}>
                                 <Form.Group>
-                                  <Form.Label className="small fw-bold text-secondary">CARGO ACTUAL</Form.Label>
-                                  <Form.Control type="text" name="cargo_actual" value={formData.cargo_actual} onChange={handleChange} className="pro-input" />
+                                  <Form.Label className="small fw-bold text-secondary">CARGO ACTUAL *</Form.Label>
+                                  <Form.Control required type="text" name="cargo_actual" value={formData.cargo_actual} onChange={handleChange} className="pro-input" />
                                 </Form.Group>
                               </Col>
                               <Col md={6}>
                                 <Form.Group>
-                                  <Form.Label className="small fw-bold text-secondary">EMPRESA</Form.Label>
-                                  <Form.Control type="text" name="nombre_empresa" value={formData.nombre_empresa} onChange={handleChange} className="pro-input" />
+                                  <Form.Label className="small fw-bold text-secondary">EMPRESA *</Form.Label>
+                                  <Form.Control required type="text" name="nombre_empresa" value={formData.nombre_empresa} onChange={handleChange} className="pro-input" />
                                 </Form.Group>
                               </Col>
                               <Col md={6}>

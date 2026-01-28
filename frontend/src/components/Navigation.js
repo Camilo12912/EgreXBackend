@@ -69,13 +69,21 @@ const Navigation = () => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" className="border-0 shadow-none" />
 
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="mx-auto">
+          <Nav className="ms-auto me-4">
             <Nav.Link
               as={Link}
               to="/events"
               className={`nav-link-pro px-3 ${isActive('/events') ? 'active' : ''}`}
             >
               Eventos
+            </Nav.Link>
+
+            <Nav.Link
+              as={Link}
+              to="/profile"
+              className={`nav-link-pro px-3 ${isActive('/profile') ? 'active' : ''}`}
+            >
+              Perfil
             </Nav.Link>
 
             {user && user.role === 'admin' && (

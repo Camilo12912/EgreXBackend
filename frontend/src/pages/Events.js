@@ -548,7 +548,7 @@ const Events = () => {
                                     )}
                                     <div className="position-absolute top-0 end-0 p-3">
                                         <Button variant="light" className="rounded-circle shadow-sm border-0 p-2" onClick={() => setShowDetailModal(false)}>
-                                            <FaPlus style={{ transform: 'rotate(45deg)' }} size={14} />
+                                            <FaPlus style={{ transform: 'rotate(45deg)', color: 'var(--institutional-red)' }} size={14} />
                                         </Button>
                                     </div>
                                 </div>
@@ -653,7 +653,7 @@ const Events = () => {
                             <Row className="g-4">
                                 <Col md={12}>
                                     <Form.Group>
-                                        <Form.Label className="small fw-bold text-secondary">TÍTULO</Form.Label>
+                                        <Form.Label className="small fw-bold text-secondary">TÍTULO *</Form.Label>
                                         <Form.Control
                                             required
                                             placeholder="Ej: Cumbre de Liderazgo"
@@ -665,7 +665,7 @@ const Events = () => {
                                 </Col>
                                 <Col md={6}>
                                     <Form.Group>
-                                        <Form.Label className="small fw-bold text-secondary">FECHA</Form.Label>
+                                        <Form.Label className="small fw-bold text-secondary">FECHA *</Form.Label>
                                         <Form.Control
                                             required
                                             type="datetime-local"
@@ -677,7 +677,7 @@ const Events = () => {
                                 </Col>
                                 <Col md={6}>
                                     <Form.Group>
-                                        <Form.Label className="small fw-bold text-secondary">UBICACIÓN</Form.Label>
+                                        <Form.Label className="small fw-bold text-secondary">UBICACIÓN *</Form.Label>
                                         <Form.Control
                                             placeholder="Auditorio / Virtual"
                                             value={formData.location}
@@ -704,7 +704,7 @@ const Events = () => {
                                 </Col>
                                 <Col md={12}>
                                     <Form.Group>
-                                        <Form.Label className="small fw-bold text-secondary">DESCRIPCIÓN</Form.Label>
+                                        <Form.Label className="small fw-bold text-secondary">DESCRIPCIÓN *</Form.Label>
                                         <Form.Control
                                             as="textarea"
                                             rows={4}
