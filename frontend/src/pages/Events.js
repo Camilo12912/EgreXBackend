@@ -85,65 +85,67 @@ const Events = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const isAdmin = user && user.role === 'admin';
 
+    const [checkingStatus, setCheckingStatus] = useState(false);
+
     useEffect(() => {
         fetchEvents();
         checkProfileStatus();
     }, []);
 
     const checkProfileStatus = async () => {
-        // Check if user just updated profile to bypass stale API/cache
-        const justUpdated = localStorage.getItem('profileJustUpdated');
-        if (justUpdated) {
-            const timeDiff = new Date().getTime() - parseInt(justUpdated);
-            if (timeDiff < 300000) { // 5 minutes buffer
-                setProfileNeedsUpdate(false);
-                // We'll still fetch in background to sync, but we don't block
-            }
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user?.role === 'admin') {
+            setProfileNeedsUpdate(false);
+            return;
         }
 
+        setCheckingStatus(true);
+        const justUpdated = localStorage.getItem('profileJustUpdated');
+
         try {
-            // Add cache-buster to ensure we get fresh data after an update
-            const response = await api.get(`/profile?t=${new Date().getTime()}`);
+            // Add double cache-buster (timestamp + random)
+            const response = await api.get(`/profile?t=${new Date().getTime()}&v=${Math.random()}`);
             const data = response.data;
 
             if (!data) {
-                if (!justUpdated) setProfileNeedsUpdate(true);
+                // If it's empty but we just updated, give it the benefit of the doubt
+                setProfileNeedsUpdate(!justUpdated);
                 return;
             }
 
-            // check if key fields are missing
-            const isIncomplete = !data.nombre || !data.programa_academico || !data.profesion;
+            // check if truly mandatory fields are present
+            const hasName = data.nombre && data.nombre.toString().trim().length > 0;
+            const hasProgram = data.programa_academico && data.programa_academico.length > 0;
+            const hasProfession = data.profesion && data.profesion.toString().trim().length > 0;
 
-            // check 4 month rule
+            const isIncomplete = !hasName || !hasProgram || !hasProfession;
+
+            // 120 days = 4 months roughly
             let isOutdated = false;
             if (data.fecha_actualizacion) {
-                const lastUpdate = new Date(data.fecha_actualizacion);
-                const fourMonthsAgo = new Date();
-                fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
-                if (lastUpdate < fourMonthsAgo) {
-                    isOutdated = true;
-                }
+                const now = new Date();
+                const updateDate = new Date(data.fecha_actualizacion);
+                const diffTime = Math.abs(now - updateDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays > 120) isOutdated = true;
             } else {
                 isOutdated = true;
             }
 
-            // Final decision: if just updated, trust local state over potentially stale API
-            if (justUpdated && (new Date().getTime() - parseInt(justUpdated) < 300000)) {
+            // If the user JUST updated (last 10 mins), they are good regardless of API lag
+            if (justUpdated && (new Date().getTime() - parseInt(justUpdated) < 600000)) {
                 setProfileNeedsUpdate(false);
             } else {
                 setProfileNeedsUpdate(isIncomplete || isOutdated);
             }
-
-            // Clear the flag if the API finally confirms everything is OK
-            if (!isIncomplete && !isOutdated) {
-                localStorage.removeItem('profileJustUpdated');
-            }
         } catch (err) {
-            console.error('Error fetching profile status:', err);
-            // If profile doesn't exist yet (404), it definitely needs update
-            if (err.response?.status === 404 && !justUpdated) {
-                setProfileNeedsUpdate(true);
+            console.error('Error profile check:', err);
+            // If 404 and we haven't just updated, block. Otherwise allow if we just updated.
+            if (err.response?.status === 404) {
+                setProfileNeedsUpdate(!justUpdated);
             }
+        } finally {
+            setCheckingStatus(false);
         }
     };
 
@@ -416,13 +418,25 @@ const Events = () => {
                                     Tu perfil está incompleto o requiere actualización (obligatorio cada 4 meses).
                                     Debes completar tus datos para poder inscribirte en los próximos eventos.
                                 </p>
-                                <Button
-                                    variant="link"
-                                    className="p-0 mt-2 fw-bold text-decoration-none text-dark small"
-                                    onClick={() => navigate('/profile')}
-                                >
-                                    ACTUALIZAR MI PERFIL AHORA →
-                                </Button>
+                                <div className="d-flex gap-3 align-items-center mt-2">
+                                    <Button
+                                        variant="link"
+                                        className="p-0 fw-bold text-decoration-none text-dark small"
+                                        onClick={() => navigate('/profile')}
+                                    >
+                                        ACTUALIZAR MI PERFIL AHORA →
+                                    </Button>
+                                    <Button
+                                        variant="outline-dark"
+                                        size="sm"
+                                        className="rounded-pill px-3"
+                                        style={{ fontSize: '0.65rem' }}
+                                        onClick={checkProfileStatus}
+                                        disabled={checkingStatus}
+                                    >
+                                        {checkingStatus ? <Spinner animation="border" size="sm" /> : 'REINTENTAR'}
+                                    </Button>
+                                </div>
                             </div>
                         </Alert>
                     </motion.div>
