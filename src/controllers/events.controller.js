@@ -13,19 +13,20 @@ exports.getEvents = async (req, res) => {
 
 exports.createEvent = async (req, res) => {
     try {
-        const { title, description, date, location, imageUrl } = req.body;
+        const { title, description, date, location, imageUrl, formQuestions } = req.body;
         const imageData = req.file ? req.file.buffer : null;
 
         const newEvent = await EventService.createEvent({
-            title, description, date, location, imageUrl, imageData
+            title, description, date, location, imageUrl, imageData,
+            formQuestions: typeof formQuestions === 'string' ? JSON.parse(formQuestions) : formQuestions
         });
         res.status(201).json(newEvent);
     } catch (error) {
-        if (error.message === 'Title and Date are required') {
-            return res.status(400).json({ error: error.message });
+        if (error.message.includes('past')) {
+            return res.status(400).json({ error: 'No se pueden crear eventos con fecha o hora anterior a la actual' });
         }
-        if (error.message === 'Cannot create event in the past') {
-            return res.status(400).json({ error: 'No se pueden crear eventos con fecha anterior a la actual' });
+        if (error.message.includes('required')) {
+            return res.status(400).json({ error: 'El título y la fecha son obligatorios' });
         }
         console.error('Error creating event:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -50,8 +51,9 @@ exports.registerToEvent = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
+        const { formResponses } = req.body;
 
-        const registration = await EventService.registerUserToEvent(id, userId);
+        const registration = await EventService.registerUserToEvent(id, userId, formResponses);
         res.json({ message: 'Registered successfully', registration });
     } catch (error) {
         if (error.message === 'Event not found') {
@@ -61,6 +63,19 @@ exports.registerToEvent = async (req, res) => {
             return res.status(400).json({ error: error.message });
         }
         console.error('Error registering to event:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.markAttendance = async (req, res) => {
+    try {
+        const { eventId, userId } = req.params;
+        const { attended } = req.body;
+
+        const registration = await EventService.markAttendance(eventId, userId, attended);
+        res.json({ message: 'Attendance updated', registration });
+    } catch (error) {
+        console.error('Error marking attendance:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

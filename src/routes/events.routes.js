@@ -19,5 +19,6 @@ router.delete('/:id', authenticateToken, requireRole('admin'), eventsController.
 // Registration & Monitoring
 router.post('/:id/register', authenticateToken, eventsController.registerToEvent);
 router.get('/:id/participants', authenticateToken, requireRole('admin'), eventsController.getEventParticipants);
+router.post('/:eventId/attendance/:userId', authenticateToken, requireRole('admin'), eventsController.markAttendance);
 
 module.exports = router;

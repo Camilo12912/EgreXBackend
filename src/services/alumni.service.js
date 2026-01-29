@@ -47,15 +47,24 @@ class AlumniService {
         };
     }
 
-    async getAllAlumniWithProfiles() {
-        const query = `
+    async getAllAlumniWithProfiles(filters = {}) {
+        let query = `
             SELECT p.*, u.id, u.email, u.role
             FROM users u
             LEFT JOIN egresados_profiles p ON u.id = p.user_id
             WHERE u.role = 'egresado'
-            ORDER BY u.email ASC
         `;
-        const { rows } = await db.query(query);
+        const values = [];
+        let paramIndex = 1;
+
+        if (filters.programa_academico) {
+            query += ` AND p.programa_academico = $${paramIndex++}`;
+            values.push(filters.programa_academico);
+        }
+
+        query += ` ORDER BY p.nombre ASC NULLS LAST, u.email ASC`;
+
+        const { rows } = await db.query(query, values);
         return rows;
     }
 
@@ -69,7 +78,8 @@ class AlumniService {
             VALUES (gen_random_uuid(), $1, $2, $3, 'egresado', TRUE)
             RETURNING id
         `;
-        const { rows: userRows } = await db.query(userQuery, [email, identificacion, passwordHash]);
+        // Email is optional now
+        const { rows: userRows } = await db.query(userQuery, [email || null, identificacion, passwordHash]);
         const userId = userRows[0].id;
 
         const profileQuery = `
@@ -93,14 +103,14 @@ class AlumniService {
                 // Ensure required fields map correctly
                 const data = {
                     identificacion: alumni['Cédula'] || alumni['cedula'] || alumni['identificacion'],
-                    email: alumni['Email'] || alumni['email'],
+                    // Email is no longer required or mapped from Excel as per user request
                     nombre: alumni['Nombre'] || alumni['nombre'],
                     programa_academico: alumni['Programa'] || alumni['programa'] || alumni['programa_academico'],
                     sede: alumni['Sede'] || alumni['sede']
                 };
 
-                if (!data.identificacion || !data.email) {
-                    throw new Error(`Datos incompletos para: ${JSON.stringify(alumni)}`);
+                if (!data.identificacion) {
+                    throw new Error(`Cédula es obligatoria: ${JSON.stringify(alumni)}`);
                 }
 
                 // Check if user exists first to avoid blowing up with unique constraint errors if possible, 
@@ -113,7 +123,7 @@ class AlumniService {
             } catch (error) {
                 results.failed++;
                 results.errors.push({
-                    user: alumni['Nombre'] || alumni['Email'],
+                    user: alumni['Nombre'] || (alumni['Cédula'] ? `Cédula: ${alumni['Cédula']}` : 'Desconocido'),
                     error: error.message
                 });
             }

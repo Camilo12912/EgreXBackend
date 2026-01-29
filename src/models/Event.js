@@ -2,19 +2,19 @@ const db = require('../config/db');
 
 class Event {
     static async findAll() {
-        const query = 'SELECT id, title, description, date, location, image_url, image_data FROM events ORDER BY date ASC';
+        const query = 'SELECT id, title, description, date, location, image_url, image_data, form_questions FROM events ORDER BY date ASC';
         const { rows } = await db.query(query);
         return rows;
     }
 
     static async create(event) {
-        const { title, description, date, location, imageUrl, imageData } = event;
+        const { title, description, date, location, imageUrl, imageData, formQuestions } = event;
         const query = `
-      INSERT INTO events (id, title, description, date, location, image_url, image_data)
-      VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6)
+      INSERT INTO events (id, title, description, date, location, image_url, image_data, form_questions)
+      VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7)
       RETURNING *;
     `;
-        const values = [title, description, date, location, imageUrl, imageData];
+        const values = [title, description, date, location, imageUrl, imageData, JSON.stringify(formQuestions || [])];
         const { rows } = await db.query(query, values);
         return rows[0];
     }

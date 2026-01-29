@@ -21,17 +21,21 @@ class ProfileService {
                 'nombre', 'telefono', 'profesion', 'empresa',
                 'correo_personal', 'identificacion', 'ciudad_residencia', 'direccion_domicilio', 'barrio',
                 'programa_academico', 'sede', 'laboralmente_activo', 'cargo_actual', 'sector_economico',
-                'nombre_empresa', 'rango_salarial', 'ejerce_perfil_profesional', 'reconocimientos', 'tratamiento_datos'
+                'nombre_empresa', 'rango_salarial', 'ejerce_perfil_profesional', 'reconocimientos', 'tratamiento_datos',
+                'estudios_adicionales', 'detalles_laborales'
             ];
 
             for (const col of columns) {
-                if (fields[col] !== undefined && String(fields[col]) !== String(profile[col] || '')) {
+                const newVal = (fields[col] !== null && typeof fields[col] === 'object') ? JSON.stringify(fields[col]) : String(fields[col] || '');
+                const oldVal = (profile[col] !== null && typeof profile[col] === 'object') ? JSON.stringify(profile[col]) : String(profile[col] || '');
+
+                if (fields[col] !== undefined && newVal !== oldVal) {
                     await ProfileHistory.logChange(
                         userId,
                         changedBy,
                         col,
-                        profile[col] ? String(profile[col]) : null,
-                        String(fields[col])
+                        profile[col] ? oldVal : null,
+                        newVal
                     );
                 }
             }

@@ -19,11 +19,16 @@ class EventService {
         const eventDate = new Date(date);
         const now = new Date();
 
+        // Use a 5 minute buffer to allow creating events for "right now"
+        // without being blocked by seconds/milliseconds difference
+        const buffer = 5 * 60 * 1000;
+        const compareTime = now.getTime() - buffer;
+
         if (isNaN(eventDate.getTime())) {
             throw new Error('Invalid Date');
         }
 
-        if (eventDate < now) {
+        if (eventDate.getTime() < compareTime) {
             throw new Error('Cannot create event in the past');
         }
 
@@ -38,7 +43,7 @@ class EventService {
         return true;
     }
 
-    async registerUserToEvent(eventId, userId) {
+    async registerUserToEvent(eventId, userId, formResponses) {
         const event = await Event.findById(eventId);
         if (!event) {
             throw new Error('Event not found');
@@ -47,15 +52,20 @@ class EventService {
         const eventDate = new Date(event.date);
         const currentDate = new Date();
 
+        // Allowing registration until the event starts
         if (eventDate < currentDate) {
             throw new Error('Cannot register for past events');
         }
 
-        return await EventRegistration.register(eventId, userId);
+        return await EventRegistration.register(eventId, userId, formResponses);
     }
 
     async getParticipants(eventId) {
         return await EventRegistration.getParticipants(eventId);
+    }
+
+    async markAttendance(eventId, userId, attended) {
+        return await EventRegistration.markAttendance(eventId, userId, attended);
     }
 }
 

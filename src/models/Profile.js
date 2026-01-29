@@ -12,7 +12,8 @@ class Profile {
             userId, nombre, telefono, profesion, empresa,
             correo_personal, identificacion, ciudad_residencia, direccion_domicilio, barrio,
             programa_academico, sede, laboralmente_activo, cargo_actual, sector_economico,
-            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos
+            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos,
+            estudios_adicionales, detalles_laborales
         } = profile;
 
         const query = `
@@ -20,13 +21,15 @@ class Profile {
                 id, user_id, nombre, telefono, profesion, empresa, fecha_actualizacion,
                 correo_personal, identificacion, ciudad_residencia, direccion_domicilio, barrio,
                 programa_academico, sede, laboralmente_activo, cargo_actual, sector_economico,
-                nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos
+                nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos,
+                estudios_adicionales, detalles_laborales
             )
             VALUES (
                 gen_random_uuid(), $1, $2, $3, $4, $5, NOW(),
                 $6, $7, $8, $9, $10,
                 $11, $12, $13, $14, $15,
-                $16, $17, $18, $19, $20
+                $16, $17, $18, $19, $20,
+                $21, $22
             )
             RETURNING *;
         `;
@@ -34,7 +37,8 @@ class Profile {
             userId, nombre, telefono, profesion, empresa,
             correo_personal, identificacion, ciudad_residencia, direccion_domicilio, barrio,
             programa_academico, sede, laboralmente_activo, cargo_actual, sector_economico,
-            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos
+            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos,
+            estudios_adicionales, detalles_laborales
         ];
         const { rows } = await db.query(query, values);
         return rows[0];
@@ -45,7 +49,8 @@ class Profile {
             nombre, telefono, profesion, empresa,
             correo_personal, identificacion, ciudad_residencia, direccion_domicilio, barrio,
             programa_academico, sede, laboralmente_activo, cargo_actual, sector_economico,
-            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos
+            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos,
+            estudios_adicionales, detalles_laborales
         } = fields;
 
         // Build dynamic query for partial update
@@ -57,14 +62,16 @@ class Profile {
             'nombre', 'telefono', 'profesion', 'empresa',
             'correo_personal', 'identificacion', 'ciudad_residencia', 'direccion_domicilio', 'barrio',
             'programa_academico', 'sede', 'laboralmente_activo', 'cargo_actual', 'sector_economico',
-            'nombre_empresa', 'rango_salarial', 'ejerce_perfil_profesional', 'reconocimientos', 'tratamiento_datos'
+            'nombre_empresa', 'rango_salarial', 'ejerce_perfil_profesional', 'reconocimientos', 'tratamiento_datos',
+            'estudios_adicionales', 'detalles_laborales'
         ];
 
         const fieldValues = {
             nombre, telefono, profesion, empresa,
             correo_personal, identificacion, ciudad_residencia, direccion_domicilio, barrio,
             programa_academico, sede, laboralmente_activo, cargo_actual, sector_economico,
-            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos
+            nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos,
+            estudios_adicionales, detalles_laborales
         };
 
         columns.forEach(col => {

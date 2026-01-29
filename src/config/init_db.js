@@ -38,7 +38,7 @@ async function initializeDatabase() {
         await db.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                email VARCHAR(255) UNIQUE NOT NULL,
+                email VARCHAR(255) UNIQUE,
                 identificacion VARCHAR(50) UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 role VARCHAR(50) NOT NULL DEFAULT 'egresado',
@@ -47,7 +47,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('   ✅ Tabla [users] creada.');
+        console.log('   ✅ Tabla [users] creada (email opcional).');
 
         // 2. Profiles Table
         await db.query(`
@@ -73,6 +73,8 @@ async function initializeDatabase() {
                 ejerce_perfil_profesional VARCHAR(20),
                 reconocimientos TEXT,
                 tratamiento_datos BOOLEAN DEFAULT FALSE,
+                estudios_adicionales JSONB DEFAULT NULL,
+                detalles_laborales JSONB DEFAULT NULL,
                 fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -103,10 +105,11 @@ async function initializeDatabase() {
                 location VARCHAR(255),
                 image_url TEXT,
                 image_data BYTEA,
+                form_questions JSONB DEFAULT '[]',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('   ✅ Tabla [events] creada.');
+        console.log('   ✅ Tabla [events] creada (con formularios dinámicos).');
 
         // 5. Event Registrations Table
         await db.query(`
@@ -114,11 +117,13 @@ async function initializeDatabase() {
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 event_id UUID REFERENCES events(id) ON DELETE CASCADE,
                 user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                form_responses JSONB DEFAULT '{}',
+                attended BOOLEAN DEFAULT FALSE,
                 registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(event_id, user_id)
             );
         `);
-        console.log('   ✅ Tabla [event_registrations] creada.');
+        console.log('   ✅ Tabla [event_registrations] creada (con respuestas y asistencia).');
 
         // 6. Seed Admin User
         console.log('👤 Configurando cuenta de administrador...');

@@ -14,7 +14,8 @@ exports.getMetrics = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await AlumniService.getAllAlumniWithProfiles();
+        const { programa_academico } = req.query;
+        const users = await AlumniService.getAllAlumniWithProfiles({ programa_academico });
         res.json(users);
     } catch (error) {
         console.error('Error getting all users:', error);

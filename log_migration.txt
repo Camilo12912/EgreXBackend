@@ -1,0 +1,89 @@
+node : node:internal/
+modules/cjs/loader:10
+80
+En l?nea: 1 
+Car?cter: 1
++ node 
+migrate_jsonb.js 
+2>&1 | Out-File 
+-FilePath 
+"log_migration.txt" 
+- ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (node:in   
+ ternal/modules/c    
+js/loader:1080:S    
+tring) [], Remot    
+eException
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  throw err;
+  ^
+
+Error: Cannot find 
+module 'pg'
+Require stack:
+- C:\Users\Usuario\De
+sktop\EgreX\egrex-bac
+kend\src\config\db.js
+- C:\Users\Usuario\De
+sktop\EgreX\egrex-bac
+kend\migrate_jsonb.js
+    at Module._resolv
+eFilename (node:inter
+nal/modules/cjs/loade
+r:1077:15)
+    at Module._load (
+node:internal/modules
+/cjs/loader:922:27)
+    at 
+Module.require (node:
+internal/modules/cjs/
+loader:1143:19)
+    at require (node:
+internal/modules/cjs/
+helpers:121:18)
+    at 
+Object.<anonymous> (C
+:\Users\Usuario\Deskt
+op\EgreX\egrex-backen
+d\src\config\db.js:1:
+18)
+    at 
+Module._compile (node
+:internal/modules/cjs
+/loader:1256:14)
+    at Module._extens
+ions..js (node:intern
+al/modules/cjs/loader
+:1310:10)
+    at Module.load (n
+ode:internal/modules/
+cjs/loader:1119:32)
+    at Module._load (
+node:internal/modules
+/cjs/loader:960:12)
+    at 
+Module.require (node:
+internal/modules/cjs/
+loader:1143:19) {
+  code: 
+'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Usuar
+io\\Desktop\\EgreX\\e
+grex-backend\\src\\co
+nfig\\db.js',
+    'C:\\Users\\Usuar
+io\\Desktop\\EgreX\\e
+grex-backend\\migrate
+_jsonb.js'
+  ]
+}
+
+Node.js v18.17.1

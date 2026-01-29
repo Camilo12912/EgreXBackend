@@ -1,14 +1,14 @@
 const db = require('../config/db');
 
 class EventRegistration {
-    static async register(eventId, userId) {
+    static async register(eventId, userId, formResponses) {
         const query = `
-            INSERT INTO event_registrations (event_id, user_id)
-            VALUES ($1, $2)
+            INSERT INTO event_registrations (event_id, user_id, form_responses)
+            VALUES ($1, $2, $3)
             ON CONFLICT (event_id, user_id) DO NOTHING
             RETURNING *;
         `;
-        const { rows } = await db.query(query, [eventId, userId]);
+        const { rows } = await db.query(query, [eventId, userId, JSON.stringify(formResponses || {})]);
         return rows[0];
     }
 
@@ -25,8 +25,11 @@ class EventRegistration {
     static async getParticipants(eventId) {
         const query = `
             SELECT 
+                u.id AS user_id,
                 er.registered_at,
-                u.email,
+                er.form_responses,
+                er.attended,
+                COALESCE(p.correo_personal, u.email) AS email,
                 u.identificacion,
                 p.nombre,
                 p.telefono,
@@ -48,6 +51,17 @@ class EventRegistration {
         `;
         const { rows } = await db.query(query, [eventId, userId]);
         return rows.length > 0;
+    }
+
+    static async markAttendance(eventId, userId, attended) {
+        const query = `
+            UPDATE event_registrations
+            SET attended = $3
+            WHERE event_id = $1 AND user_id = $2
+            RETURNING *;
+        `;
+        const { rows } = await db.query(query, [eventId, userId, attended]);
+        return rows[0];
     }
 }
 
