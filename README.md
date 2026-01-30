@@ -1,78 +1,30 @@
-# Sistema de Gestión de Egresados - EgreX 🎓
+# Despliegue de Producción - EgreX
 
-El **Sistema de Gestión de Egresados (EgreX)** es una plataforma integral diseñada para la administración estratégica de la comunidad de graduados. Permite el seguimiento detallado de la trayectoria laboral, la gestión de eventos institucionales y la generación de reportes avanzados para la toma de decisiones.
+Esta carpeta contiene los archivos necesarios para lanzar el proyecto en producción utilizando Docker.
 
-## 🚀 Características Principales
+## Archivos incluidos
+- `docker-compose.yml`: Configuración principal de Docker Compose con salud de servicios (healthchecks) y redes aisladas.
+- `.env.example`: Plantilla para las variables de entorno necesarias.
 
-- **Gestión Autónoma de Base de Datos:** El sistema se inicializa solo. No requiere scripts manuales; el backend asegura la estructura al arrancar.
-- **Reportes Avanzados:** Exportación completa de datos de egresados a Excel (20+ dimensiones) y PDF.
-- **Seguimiento Laboral:** Ficha técnica expandida con información de empresa, sector, rango salarial y méritos.
-- **Gestión de Eventos:** Registro y control de asistencia con descarga de participantes.
-- **Diseño Premium:** Interfaz minimalista, profesional y responsiva basada en los colores institucionales.
+## Instrucciones de uso
 
-## 🛠️ Arquitectura y Tecnologías
+1.  **Preparar variables de entorno**:
+    Copia el archivo `.env.example` a un nuevo archivo llamado `.env` y configura los valores reales (claves, contraseñas, etc.).
+    ```bash
+    cp .env.example .env
+    ```
 
-- **Frontend:** React.js con Framer Motion para animaciones y React Bootstrap para el diseño.
-- **Backend:** Node.js / Express con arquitectura modular y autónoma.
-- **Base de Datos:** PostgreSQL (Contenerizado o Cloud SQL).
-- **Contenerización:** Docker & Docker Compose para despliegue instantáneo.
+2.  **Lanzar el proyecto**:
+    Ejecuta el siguiente comando para construir y levantar todos los servicios en segundo plano:
+    ```bash
+    docker compose up -d
+    ```
 
-## 📦 Despliegue Rápido (Docker)
+3.  **Verificar estado**:
+    ```bash
+    docker compose ps
+    ```
 
-La forma más sencilla de poner el sistema a prueba es usando Docker:
-
-1. **Clonar el repositorio.**
-2. **Ejecutar el comando de arranque:**
-   ```bash
-   docker-compose up --build -d
-   ```
-3. **Acceder al sistema:**
-   - **Frontend:** `http://localhost`
-   - **Backend API:** `http://localhost:8080/api`
-
-### 🔑 Credenciales por Defecto
-El sistema crea automáticamente un administrador inicial:
-- **Usuario (Email/ID):** `admin` (en el campo de login)
-- **Contraseña:** `admin`
-
-## ⚙️ Configuración Manual (Desarrollo)
-
-### Backend
-1. Ir a `/backend`, crear un `.env` basado en las variables de `docker-compose.yml`.
-2. Ejecutar `npm install` y luego `npm start`.
-3. El servidor se encargará de crear las tablas si la DB está vacía.
-
-### Frontend
-1. Ir a `/frontend`.
-2. Ejecutar `npm install` y luego `npm start`.
-3. La aplicación estará en `http://localhost:3000`.
-
-## 📁 Estructura del Proyecto
-
-```
-/
-├── backend/                # API REST Autónoma
-│   ├── src/
-│   │   ├── config/         # Inicialización de DB e Init seguro
-│   │   ├── controllers/    # Lógica de Egresados y Eventos
-│   │   ├── models/         # Modelos de datos
-│   │   └── server.js       # Punto de entrada autónomo
-│   └── Dockerfile
-│
-├── frontend/               # Aplicación React Premium
-│   ├── src/
-│   │   ├── pages/          # AdminUsers, Events, Profile, etc.
-│   │   └── services/       # Comunicación con API
-│   └── Dockerfile
-│
-└── docker-compose.yml      # Orquestación de servicios
-```
-
-## ✅ Objetivos Cumplidos
-- [x] **Reportes:** Exportación avanzada a Excel y PDF.
-- [x] **Seguridad:** Autenticación JWT y roles protegidos.
-- [x] **Autonomía:** DB autogestionada por el backend.
-- [x] **UX:** Diseño minimalista con iconos y tooltips.
-
----
-Institución de Educación Superior FESC - 2026
+## Estructura de Redes
+- `ingress`: Utilizada por el frontend y el backend para comunicarse con el mundo exterior.
+- `data`: Red interna y privada para la comunicación entre el backend y la base de datos (PostgreSQL).
