@@ -46,6 +46,18 @@ exports.getUserHistory = async (req, res) => {
 
 exports.createUser = async (req, res) => {
     try {
+        const { identificacion, email } = req.body;
+
+        if (!identificacion) {
+            return res.status(400).json({ error: 'La identificación es obligatoria' });
+        }
+
+        // Simple email regex validation if email is provided
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email && !emailRegex.test(email)) {
+            return res.status(400).json({ error: 'El formato del correo electrónico no es válido' });
+        }
+
         const userId = await AlumniService.registerNewAlumni(req.body);
         res.status(201).json({ message: 'Egresado creado exitosamente', userId });
     } catch (error) {

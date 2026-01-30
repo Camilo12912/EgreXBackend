@@ -106,6 +106,9 @@ exports.updateEvent = async (req, res) => {
         if (error.message === 'Event not found') {
             return res.status(404).json({ error: error.message });
         }
+        if (error.message.includes('past') || error.message.includes('ongoing')) {
+            return res.status(400).json({ error: error.message });
+        }
         if (error.message === 'Invalid Date') {
             return res.status(400).json({ error: error.message });
         }

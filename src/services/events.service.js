@@ -61,15 +61,23 @@ class EventService {
     }
 
     async updateEvent(id, eventData) {
+        // Validate if event exists and is in the future
         const existingEvent = await Event.findById(id);
         if (!existingEvent) {
             throw new Error('Event not found');
         }
 
-        const { date } = eventData;
-        if (date) {
-            const eventDate = new Date(date);
-            if (isNaN(eventDate.getTime())) {
+        const eventDate = new Date(existingEvent.date);
+        // Allow editing only if the event hasn't started yet
+        // Using a small buffer (e.g. 1 min) to be safe or strict current time
+        if (eventDate <= new Date()) {
+            throw new Error('Cannot edit a past or ongoing event');
+        }
+
+        // Validate the new date if provided in eventData
+        if (eventData.date) {
+            const validDate = new Date(eventData.date);
+            if (isNaN(validDate.getTime())) {
                 throw new Error('Invalid Date');
             }
         }
