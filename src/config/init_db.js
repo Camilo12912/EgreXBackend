@@ -140,7 +140,7 @@ async function initializeDatabase() {
         await db.query(`
             INSERT INTO users (id, email, identificacion, password_hash, role)
             VALUES (gen_random_uuid(), $1, $2, $3, 'admin')
-            ON CONFLICT (email) DO UPDATE SET password_hash = $3, identificacion = $2;
+            ON CONFLICT (email) DO NOTHING;
         `, [adminEmail, adminId, adminHash]);
 
         console.log(`   ✅ Admin configurado: ID "${adminId}" / Pass "${adminPass}"`);
