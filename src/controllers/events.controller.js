@@ -94,7 +94,8 @@ exports.updateEvent = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, date, location, imageUrl, formQuestions } = req.body;
-        const imageData = req.file ? req.file.buffer : null;
+        // FIX: Use undefined if no file, so Model.update checks !== undefined and skips overwrite
+        const imageData = req.file ? req.file.buffer : undefined;
 
         const updatedEvent = await EventService.updateEvent(id, {
             title, description, date, location, imageUrl, imageData,
