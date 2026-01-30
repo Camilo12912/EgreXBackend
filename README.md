@@ -1,78 +1,93 @@
-# Sistema de Gestión de Egresados - EgreX 🎓
+# 🚀 EgreX Backend - Núcleo de Gestión de Egresados 🎓
 
-El **Sistema de Gestión de Egresados (EgreX)** es una plataforma integral diseñada para la administración estratégica de la comunidad de graduados. Permite el seguimiento detallado de la trayectoria laboral, la gestión de eventos institucionales y la generación de reportes avanzados para la toma de decisiones.
-
-## 🚀 Características Principales
-
-- **Gestión Autónoma de Base de Datos:** El sistema se inicializa solo. No requiere scripts manuales; el backend asegura la estructura al arrancar.
-- **Reportes Avanzados:** Exportación completa de datos de egresados a Excel (20+ dimensiones) y PDF.
-- **Seguimiento Laboral:** Ficha técnica expandida con información de empresa, sector, rango salarial y méritos.
-- **Gestión de Eventos:** Registro y control de asistencia con descarga de participantes.
-- **Diseño Premium:** Interfaz minimalista, profesional y responsiva basada en los colores institucionales.
-
-## 🛠️ Arquitectura y Tecnologías
-
-- **Frontend:** React.js con Framer Motion para animaciones y React Bootstrap para el diseño.
-- **Backend:** Node.js / Express con arquitectura modular y autónoma.
-- **Base de Datos:** PostgreSQL (Contenerizado o Cloud SQL).
-- **Contenerización:** Docker & Docker Compose para despliegue instantáneo.
-
-## 📦 Despliegue Rápido (Docker)
-
-La forma más sencilla de poner el sistema a prueba es usando Docker:
-
-1. **Clonar el repositorio.**
-2. **Ejecutar el comando de arranque:**
-   ```bash
-   docker-compose up --build -d
-   ```
-3. **Acceder al sistema:**
-   - **Frontend:** `http://localhost`
-   - **Backend API:** `http://localhost:8080/api`
-
-### 🔑 Credenciales por Defecto
-El sistema crea automáticamente un administrador inicial:
-- **Usuario (Email/ID):** `admin` (en el campo de login)
-- **Contraseña:** `admin`
-
-## ⚙️ Configuración Manual (Desarrollo)
-
-### Backend
-1. Ir a `/backend`, crear un `.env` basado en las variables de `docker-compose.yml`.
-2. Ejecutar `npm install` y luego `npm start`.
-3. El servidor se encargará de crear las tablas si la DB está vacía.
-
-### Frontend
-1. Ir a `/frontend`.
-2. Ejecutar `npm install` y luego `npm start`.
-3. La aplicación estará en `http://localhost:3000`.
-
-## 📁 Estructura del Proyecto
-
-```
-/
-├── backend/                # API REST Autónoma
-│   ├── src/
-│   │   ├── config/         # Inicialización de DB e Init seguro
-│   │   ├── controllers/    # Lógica de Egresados y Eventos
-│   │   ├── models/         # Modelos de datos
-│   │   └── server.js       # Punto de entrada autónomo
-│   └── Dockerfile
-│
-├── frontend/               # Aplicación React Premium
-│   ├── src/
-│   │   ├── pages/          # AdminUsers, Events, Profile, etc.
-│   │   └── services/       # Comunicación con API
-│   └── Dockerfile
-│
-└── docker-compose.yml      # Orquestación de servicios
-```
-
-## ✅ Objetivos Cumplidos
-- [x] **Reportes:** Exportación avanzada a Excel y PDF.
-- [x] **Seguridad:** Autenticación JWT y roles protegidos.
-- [x] **Autonomía:** DB autogestionada por el backend.
-- [x] **UX:** Diseño minimalista con iconos y tooltips.
+El **Backend de EgreX** es una API REST robusta y autónoma construida con **Node.js** y **Express**, diseñada para centralizar la lógica de negocio, la seguridad y la persistencia de datos del ecosistema EgreX. Su arquitectura modular permite un escalado eficiente y un mantenimiento simplificado.
 
 ---
-Institución de Educación Superior FESC - 2026
+
+## 🛠️ Stack Tecnológico
+
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)
+
+---
+
+## ✨ Funcionalidades Estrella
+
+- **🔌 Autonomía Total:** El sistema detecta y crea automáticamente las tablas necesarias al iniciar (Auto-Migrations).
+- **🔐 Seguridad de Grado Industrial:** Autenticación basada en JWT, protección de rutas por roles y headers de seguridad con Helmet.
+- **📊 Gestión de Datos Maestra:** Control total sobre egresados, perfiles laborales y registro en eventos.
+- **📁 Procesamiento de Archivos:** Carga masiva de egresados desde archivos Excel y generación dinámica de PDF.
+- **🌉 CORS Configurado:** Preparado para comunicación segura con el frontend en entornos de desarrollo y producción.
+
+---
+
+## 🏗️ Estructura del Proyecto
+
+```text
+src/
+├── config/         # Configuración de DB, Auth y variables de entorno.
+├── controllers/    # Lógica de respuesta para cada ruta.
+├── models/         # Definición de esquemas y modelos de datos.
+├── routes/         # Definición de los endpoints de la API.
+├── services/       # Lógica de negocio reutilizable.
+├── utils/          # Utilidades (PDF, Excel, Validaciones).
+└── server.js       # Punto de entrada de la aplicación.
+```
+
+---
+
+## 🚦 Guía de Inicio Rápido
+
+### Requisitos Previos
+- Node.js (v18+)
+- PostgreSQL (Local o Docker)
+
+### Instalación Local
+1. **Clonar y entrar:**
+   ```bash
+   cd egrex-backend
+   ```
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
+3. **Variables de Entorno:**
+   Crea un archivo `.env` siguiendo los parámetros del `docker-compose.yml`:
+   ```env
+   PORT=8080
+   DB_USER=egrex_user
+   DB_PASSWORD=egrex_pass
+   DB_NAME=egrex_db
+   DB_HOST=localhost
+   DB_PORT=5432
+   JWT_SECRET=tu_secreto_super_seguro
+   ```
+4. **Modo Desarrollo:**
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 🐳 Despliegue con Docker
+
+Si prefieres usar Docker para levantar todo el ecosistema, dirígete a la carpeta `deploy/` y ejecuta:
+
+```bash
+docker compose up --build -d
+```
+
+> [!NOTE]
+> El backend estará disponible en `http://localhost:8080/api`.
+
+---
+
+## 🤝 Contribuciones
+
+Este proyecto fue desarrollado para la **Institución de Educación Superior FESC (2026)**. Si deseas contribuir, por favor abre un Pull Request o reporta un Issue.
+
+---
+⚡ *EgreX Backend - Potencia y fiabilidad en la gestión de egresados.*

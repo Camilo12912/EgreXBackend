@@ -1,63 +1,60 @@
-# 🚀 EgreX - Deployment Hub 🚀
+# 🚀 EgreX - Centro de Despliegue Docker 🐳
 
-Este repositorio contiene la configuración centralizada para el despliegue del ecosistema **EgreX** utilizando Docker. Está diseñado para ser un proceso de "un solo clic" (clonar y ejecutar).
+Este directorio contiene la configuración maestra para el despliegue orquestado de todo el ecosistema **EgreX**. Utilizando Docker y Docker Compose, puedes tener el sistema completo funcionando en cuestión de segundos.
 
+---
 
 ## 📂 Contenido del Paquete
 
 | Archivo | Descripción |
 | :--- | :--- |
-| `docker-compose.yml` | Orquestación de servicios (Frontend, Backend, DB). |
-| `cloudbuild.yaml` | (Opcional) Configuración para Google Cloud Build. |
-| `.env` | Configuración de variables de entorno (ya configurado). |
+| `docker-compose.yml` | Orquestador de servicios (Frontend, Backend, DB). |
+| `cloudbuild.yaml` | Configuración para despliegues automatizados en Google Cloud. |
+| `.env` | Variables de entorno preconfiguradas para uso inmediato. |
 
 ---
 
-## 🚀 Guía de Inicio Rápido
+## ⚡ Guía de Inicio Ultra Rápido
 
-Sigue estos pasos para tener el sistema funcionando en menos de 1 minuto:
+Sigue estos pasos para desplegar el sistema:
 
-### 1. Desplegar
-Levanta todos los servicios en modo segundo plano (detached mode).
+### 1. Levantar Servicios
+Ejecuta el siguiente comando para construir e iniciar todos los contenedores en segundo plano:
 ```bash
-docker compose up -d
+docker compose up --build -d
 ```
 
-### 3. Verificar
-Asegúrate de que todos los contenedores estén en estado `running`.
+### 2. Verificar Estado
+Confirma que los tres servicios (db, backend, frontend) estén corriendo correctamente:
 ```bash
 docker compose ps
 ```
 
 ---
 
-## 🏗️ Arquitectura de Servicios
+## 🏗️ Arquitectura de Cero Configuración
 
-El sistema se divide en tres capas principales que se comunican automáticamente:
+El orquestador configura automáticamente tres capas interconectadas:
 
-1.  **Frontend**: Interfaz de usuario (React) expuesta en el puerto `80`.
-2.  **Backend**: API Express expuesta en el puerto `8080`.
-3.  **Database**: PostgreSQL 15, aislada en una red privada de datos.
-
-### 🌐 Redes (Docker Networks)
-- **`ingress`**: Conecta el Frontend con el Backend.
-- **`data`**: Conecta el Backend con la Base de Datos (Seguridad total).
+1.  **Frontend (React):** Accesible desde tu navegador en el puerto `80`.
+2.  **Backend (API Express):** Disponible en el puerto `8080/api`.
+3.  **Database (PostgreSQL 15):** Aislada en una red privada para máxima seguridad.
 
 ---
 
-## 📝 Comandos Útiles
+## 🛠️ Comandos de Mantenimiento
 
 | Acción | Comando |
 | :--- | :--- |
-| **Ver Logs** | `docker compose logs -f` |
-| **Reiniciar Todo** | `docker compose restart` |
-| **Bajar Servicios** | `docker compose down` |
-| **Limpiar Volúmenes** | `docker compose down -v` |
+| **Ver Logs Real-time** | `docker compose logs -f` |
+| **Reiniciar Servicios** | `docker compose restart` |
+| **Detener y Limpiar** | `docker compose down` |
+| **Borrar Datos (Cuidado)** | `docker compose down -v` |
 
 ---
 
 > [!TIP]
-> Si deseas actualizar a la última versión del código, simplemente ejecuta `docker compose pull` antes de `docker compose up -d`.
+> Para asegurarte de tener siempre la última versión de las imágenes, puedes ejecutar `docker compose pull` antes de iniciar el sistema.
 
 ---
-⚡ *EgreX Deployment System - Mantén tu infraestructura simple y eficiente.*
+⚡ *EgreX Deployment - Infraestructura simple, escalable y eficiente.*
