@@ -21,16 +21,21 @@ async function initializeDatabase() {
         console.log('--- 🚀 Iniciando flujo de configuración EgreX ---');
         await waitForDb();
 
-        // 0. Clean Slate (A petición del usuario para entorno de pruebas)
-        console.log('🧹 Limpiando tablas existentes para un arranque limpio...');
-        await db.query(`
-            DROP TABLE IF EXISTS event_registrations CASCADE;
-            DROP TABLE IF EXISTS events CASCADE;
-            DROP TABLE IF EXISTS profile_modifications CASCADE;
-            DROP TABLE IF EXISTS egresados_profiles CASCADE;
-            DROP TABLE IF EXISTS users CASCADE;
-        `);
-        console.log('✨ Base de datos limpia (tablas eliminadas).');
+        // 0. Initial Setup (Safe for Production)
+        // Solo borramos si existe una variable explícita para resetear (útil para desarrollo)
+        if (process.env.RESET_DB === 'true') {
+            console.log('🧹 Limpiando tablas existentes (RESET_DB=true)...');
+            await db.query(`
+                DROP TABLE IF EXISTS event_registrations CASCADE;
+                DROP TABLE IF EXISTS events CASCADE;
+                DROP TABLE IF EXISTS profile_modifications CASCADE;
+                DROP TABLE IF EXISTS egresados_profiles CASCADE;
+                DROP TABLE IF EXISTS users CASCADE;
+            `);
+            console.log('✨ Base de datos limpia.');
+        } else {
+            console.log('🛡️ Preservando datos existentes (Modo seguro activado).');
+        }
 
         console.log('🏗️ Creando estructura de tablas...');
 
