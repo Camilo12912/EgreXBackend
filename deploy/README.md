@@ -2,37 +2,22 @@
 
 Este repositorio contiene la configuración centralizada para el despliegue del ecosistema **EgreX** utilizando Docker. Está diseñado para ser un proceso de "un solo clic" (clonar y ejecutar).
 
----
-
-## 🛠️ Requisitos Previos
-
-Antes de comenzar, asegúrate de tener instalado:
-- [Docker](https://www.docker.com/get-started) (v20.10+)
-- [Docker Compose](https://docs.docker.com/compose/install/) (v2.0+)
-
----
 
 ## 📂 Contenido del Paquete
 
 | Archivo | Descripción |
 | :--- | :--- |
 | `docker-compose.yml` | Orquestación de servicios (Frontend, Backend, DB). |
-| `.env.example` | Plantilla de configuración de variables de entorno. |
 | `cloudbuild.yaml` | (Opcional) Configuración para Google Cloud Build. |
+| `.env` | Configuración de variables de entorno (ya configurado). |
 
 ---
 
 ## 🚀 Guía de Inicio Rápido
 
-Sigue estos pasos para tener el sistema funcionando en menos de 2 minutos:
+Sigue estos pasos para tener el sistema funcionando en menos de 1 minuto:
 
-### 1. Preparar la Configuración
-Copia la plantilla de ambiente y ajusta los valores si es necesario (contraseñas, puertos, etc.).
-```bash
-cp .env.example .env
-```
-
-### 2. Desplegar
+### 1. Desplegar
 Levanta todos los servicios en modo segundo plano (detached mode).
 ```bash
 docker compose up -d
