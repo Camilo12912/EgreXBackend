@@ -50,4 +50,4 @@ volumes:
 
 networks:
   egrex-network:
-    external: true
+    driver: bridge
