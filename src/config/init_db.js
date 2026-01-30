@@ -65,7 +65,7 @@ async function initializeDatabase() {
                 barrio VARCHAR(100),
                 programa_academico VARCHAR(255),
                 sede VARCHAR(100),
-                laboralmente_activo VARCHAR(20),
+                laboralmente_activo VARCHAR(100),
                 cargo_actual VARCHAR(255),
                 sector_economico VARCHAR(255),
                 nombre_empresa VARCHAR(255),

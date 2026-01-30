@@ -60,6 +60,23 @@ class EventService {
         return await EventRegistration.register(eventId, userId, formResponses);
     }
 
+    async updateEvent(id, eventData) {
+        const existingEvent = await Event.findById(id);
+        if (!existingEvent) {
+            throw new Error('Event not found');
+        }
+
+        const { date } = eventData;
+        if (date) {
+            const eventDate = new Date(date);
+            if (isNaN(eventDate.getTime())) {
+                throw new Error('Invalid Date');
+            }
+        }
+
+        return await Event.update(id, eventData);
+    }
+
     async getParticipants(eventId) {
         return await EventRegistration.getParticipants(eventId);
     }

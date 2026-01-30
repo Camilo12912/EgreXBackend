@@ -38,7 +38,9 @@ class Profile {
             correo_personal, identificacion, ciudad_residencia, direccion_domicilio, barrio,
             programa_academico, sede, laboralmente_activo, cargo_actual, sector_economico,
             nombre_empresa, rango_salarial, ejerce_perfil_profesional, reconocimientos, tratamiento_datos,
-            estudios_adicionales, detalles_laborales
+            // Ensure objects are stringified for DB compatibility
+            estudios_adicionales ? JSON.stringify(estudios_adicionales) : null,
+            detalles_laborales ? JSON.stringify(detalles_laborales) : null
         ];
         const { rows } = await db.query(query, values);
         return rows[0];
@@ -77,7 +79,12 @@ class Profile {
         columns.forEach(col => {
             if (fieldValues[col] !== undefined) {
                 updates.push(`${col} = $${paramIndex++}`);
-                values.push(fieldValues[col]);
+                // Stringify JSON fields if they are objects/arrays
+                if ((col === 'estudios_adicionales' || col === 'detalles_laborales') && fieldValues[col] !== null && typeof fieldValues[col] === 'object') {
+                    values.push(JSON.stringify(fieldValues[col]));
+                } else {
+                    values.push(fieldValues[col]);
+                }
             }
         });
 

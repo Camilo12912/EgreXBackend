@@ -14,6 +14,7 @@ router.get('/', authenticateToken, eventsController.getEvents);
 
 // Admin only
 router.post('/', authenticateToken, requireRole('admin'), upload.single('image'), eventsController.createEvent);
+router.put('/:id', authenticateToken, requireRole('admin'), upload.single('image'), eventsController.updateEvent);
 router.delete('/:id', authenticateToken, requireRole('admin'), eventsController.deleteEvent);
 
 // Registration & Monitoring

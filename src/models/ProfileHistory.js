@@ -26,10 +26,18 @@ class ProfileHistory {
 
     static async getGlobalHistory(limit = 20) {
         const query = `
-            SELECT pm.*, u.email as user_email, cb.email as changed_by_email
+            SELECT 
+                pm.*, 
+                u.email as user_email, 
+                cb.email as changed_by_email,
+                p.nombre as nombre,
+                cp.nombre as changed_by_nombre,
+                u.identificacion as user_identificacion
             FROM profile_modifications pm
             JOIN users u ON pm.user_id = u.id
             JOIN users cb ON pm.changed_by = cb.id
+            LEFT JOIN egresados_profiles p ON u.id = p.user_id
+            LEFT JOIN egresados_profiles cp ON cb.id = cp.user_id
             ORDER BY pm.created_at DESC
             LIMIT $1;
         `;

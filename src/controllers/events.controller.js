@@ -90,3 +90,25 @@ exports.getEventParticipants = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+exports.updateEvent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, date, location, imageUrl, formQuestions } = req.body;
+        const imageData = req.file ? req.file.buffer : null;
+
+        const updatedEvent = await EventService.updateEvent(id, {
+            title, description, date, location, imageUrl, imageData,
+            formQuestions: typeof formQuestions === 'string' ? JSON.parse(formQuestions) : formQuestions
+        });
+        res.json(updatedEvent);
+    } catch (error) {
+        if (error.message === 'Event not found') {
+            return res.status(404).json({ error: error.message });
+        }
+        if (error.message === 'Invalid Date') {
+            return res.status(400).json({ error: error.message });
+        }
+        console.error('Error updating event:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

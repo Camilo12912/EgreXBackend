@@ -38,7 +38,7 @@ class User {
 
     static async findRecentUsers() {
         const query = `
-            SELECT u.id, u.email, u.last_login, p.nombre, p.programa_academico, u.needs_password_change
+            SELECT u.id, u.email, u.last_login, p.nombre, p.programa_academico, u.needs_password_change, u.identificacion
             FROM users u
             LEFT JOIN egresados_profiles p ON u.id = p.user_id
             WHERE u.last_login IS NOT NULL AND u.role = 'egresado'
@@ -51,7 +51,7 @@ class User {
 
     static async findVerifiedUsers() {
         const query = `
-            SELECT u.id, u.email, u.last_login, p.nombre, p.programa_academico
+            SELECT u.id, u.email, u.last_login, p.nombre, p.programa_academico, u.identificacion
             FROM users u
             LEFT JOIN egresados_profiles p ON u.id = p.user_id
             WHERE u.role = 'egresado' AND u.needs_password_change = FALSE
