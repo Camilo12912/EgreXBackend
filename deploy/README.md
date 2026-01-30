@@ -1,30 +1,78 @@
-# Despliegue de Producción - EgreX
+# 🚀 EgreX - Deployment Hub 🚀
 
-Esta carpeta contiene los archivos necesarios para lanzar el proyecto en producción utilizando Docker.
+Este repositorio contiene la configuración centralizada para el despliegue del ecosistema **EgreX** utilizando Docker. Está diseñado para ser un proceso de "un solo clic" (clonar y ejecutar).
 
-## Archivos incluidos
-- `docker-compose.yml`: Configuración principal de Docker Compose con salud de servicios (healthchecks) y redes aisladas.
-- `.env.example`: Plantilla para las variables de entorno necesarias.
+---
 
-## Instrucciones de uso
+## 🛠️ Requisitos Previos
 
-1.  **Preparar variables de entorno**:
-    Copia el archivo `.env.example` a un nuevo archivo llamado `.env` y configura los valores reales (claves, contraseñas, etc.).
-    ```bash
-    cp .env.example .env
-    ```
+Antes de comenzar, asegúrate de tener instalado:
+- [Docker](https://www.docker.com/get-started) (v20.10+)
+- [Docker Compose](https://docs.docker.com/compose/install/) (v2.0+)
 
-2.  **Lanzar el proyecto**:
-    Ejecuta el siguiente comando para construir y levantar todos los servicios en segundo plano:
-    ```bash
-    docker compose up -d
-    ```
+---
 
-3.  **Verificar estado**:
-    ```bash
-    docker compose ps
-    ```
+## 📂 Contenido del Paquete
 
-## Estructura de Redes
-- `ingress`: Utilizada por el frontend y el backend para comunicarse con el mundo exterior.
-- `data`: Red interna y privada para la comunicación entre el backend y la base de datos (PostgreSQL).
+| Archivo | Descripción |
+| :--- | :--- |
+| `docker-compose.yml` | Orquestación de servicios (Frontend, Backend, DB). |
+| `.env.example` | Plantilla de configuración de variables de entorno. |
+| `cloudbuild.yaml` | (Opcional) Configuración para Google Cloud Build. |
+
+---
+
+## 🚀 Guía de Inicio Rápido
+
+Sigue estos pasos para tener el sistema funcionando en menos de 2 minutos:
+
+### 1. Preparar la Configuración
+Copia la plantilla de ambiente y ajusta los valores si es necesario (contraseñas, puertos, etc.).
+```bash
+cp .env.example .env
+```
+
+### 2. Desplegar
+Levanta todos los servicios en modo segundo plano (detached mode).
+```bash
+docker compose up -d
+```
+
+### 3. Verificar
+Asegúrate de que todos los contenedores estén en estado `running`.
+```bash
+docker compose ps
+```
+
+---
+
+## 🏗️ Arquitectura de Servicios
+
+El sistema se divide en tres capas principales que se comunican automáticamente:
+
+1.  **Frontend**: Interfaz de usuario (React) expuesta en el puerto `80`.
+2.  **Backend**: API Express expuesta en el puerto `8080`.
+3.  **Database**: PostgreSQL 15, aislada en una red privada de datos.
+
+### 🌐 Redes (Docker Networks)
+- **`ingress`**: Conecta el Frontend con el Backend.
+- **`data`**: Conecta el Backend con la Base de Datos (Seguridad total).
+
+---
+
+## 📝 Comandos Útiles
+
+| Acción | Comando |
+| :--- | :--- |
+| **Ver Logs** | `docker compose logs -f` |
+| **Reiniciar Todo** | `docker compose restart` |
+| **Bajar Servicios** | `docker compose down` |
+| **Limpiar Volúmenes** | `docker compose down -v` |
+
+---
+
+> [!TIP]
+> Si deseas actualizar a la última versión del código, simplemente ejecuta `docker compose pull` antes de `docker compose up -d`.
+
+---
+⚡ *EgreX Deployment System - Mantén tu infraestructura simple y eficiente.*
